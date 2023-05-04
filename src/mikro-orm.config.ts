@@ -1,4 +1,5 @@
-import { Options } from "@mikro-orm/core";
+import { Options } from '@mikro-orm/core';
+const knexConfig = require('./knexfile');
 
 const options: Options = {
   entities: ['./dist/entities'],
@@ -6,6 +7,9 @@ const options: Options = {
   dbName: 'todo',
   password: 'irunac',
   type: 'postgresql',
+  driverOptions: {
+    connection: knexConfig.connection
+  },
   migrations: {
     path: './dist/migrations', // path to the folder with migrations
     pathTs: './src/migrations', // path to the folder with TS migrations (if used, we should put path to compiled files in `path`)
@@ -16,14 +20,14 @@ const options: Options = {
     dropTables: true, // allow to disable table dropping
     safe: false, // allow to disable table and column dropping
     snapshot: false, // save snapshot when creating new migrations
-    emit: 'ts', // migration generation mode
+    emit: 'ts' // migration generation mode
   },
   seeder: {
     path: './dist/seeders', // path to the folder with seeders
     pathTs: './src/seeders', // path to the folder with TS seeders (if used, we should put path to compiled files in `path`)
     defaultSeeder: 'TodoSeeder', // default seeder class name
-    emit: 'ts', // seeder generation mode
-  },
+    emit: 'ts' // seeder generation mode
+  }
 };
 
 export default options;

@@ -5,30 +5,30 @@ import { Category } from './Category';
 import { TodoItem } from './TodoItem';
 
 export enum UserRole {
-    ADMIN = 'admin',
-    USER = 'user',
-};
+  ADMIN = 'admin',
+  USER = 'user',
+}
 
 @Entity()
 export class User extends BaseEntity {
-    @Property()
+  @Property()
     username!: string;
 
-    @Enum(() => UserRole)
+  @Enum(() => UserRole)
     role!: UserRole;
 
-    @OneToMany(() => Board, board => board.user, { cascade: [Cascade.ALL] })
+  @OneToMany(() => Board, board => board.user, { cascade: [Cascade.ALL] })
     boards = new Collection<Board>(this);
 
-    @OneToMany(() => Category, category => category.user, { cascade: [Cascade.ALL] })
+  @OneToMany(() => Category, category => category.user, { cascade: [Cascade.ALL] })
     categories = new Collection<Category>(this);
 
-    @OneToMany(() => TodoItem, todoItem => todoItem.user, { cascade: [Cascade.ALL] })
+  @OneToMany(() => TodoItem, todoItem => todoItem.user, { cascade: [Cascade.ALL] })
     todo_items = new Collection<TodoItem>(this);
 
-    // constructor(username: string, role: UserRole) {
-    //     super()
-    //     this.username = username;
-    //     this.role = role;
-    // }
+  // constructor(username: string, role: UserRole) {
+  //     super()
+  //     this.username = username;
+  //     this.role = role;
+  // }
 }

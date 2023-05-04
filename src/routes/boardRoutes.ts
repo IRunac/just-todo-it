@@ -1,16 +1,16 @@
 import express, { Request, Response } from 'express';
+import { Board } from '../entities/Board';
 import { EntityRepository } from '@mikro-orm/core';
 import { getOrmInstance } from '../index';
-import { User } from '../entities/User';
 
-interface UserRepository extends EntityRepository<User> {
+interface BoardRepository extends EntityRepository<Board> {
   getKnex(): any;
 }
 
 async function getKnex() {
   const orm = await getOrmInstance();
-  const userRepository = orm.em.getRepository(User) as UserRepository;
-  const knex = userRepository.getKnex();
+  const boardRepository = orm.em.getRepository(Board) as BoardRepository;
+  const knex = boardRepository.getKnex();
   return knex;
 }
 
@@ -19,24 +19,24 @@ const router = express.Router();
 // GET ALL
 router.get('/', async (req: Request, res: Response) => {
   const knex = await getKnex();
-  const users = await knex('users').select('*');
-  res.status(200).send(users);
+  const boards = await knex('boards').select('*');
+  res.status(200).send(boards);
 });
 
 // GET BY ID
 router.get('/:id', async (req: Request, res: Response) => {
   const id: number = parseInt(req.params.id!);
   const knex = await getKnex();
-  const user = await knex('users').select('*').where({ id }).first();
-  if (!user) res.sendStatus(404).send('User not found');
-  res.status(200).send(user);
+  const board = await knex('boards').select('*').where({ id }).first();
+  if (!board) res.sendStatus(404).send('Board not found');
+  res.status(200).send(board);
 });
 
 // POST
 router.post('/', async (req: Request, res: Response) => {
   const knex = await getKnex();
-  const newUser: User = { ...req.body };
-  await knex('users').insert(newUser);
+  const newBoard: Board = { ...req.body };
+  await knex('boards').insert(newBoard);
   res.sendStatus(201);
 });
 
@@ -44,21 +44,20 @@ router.post('/', async (req: Request, res: Response) => {
 router.delete('/:id', async (req: Request, res: Response) => {
   const id: number = parseInt(req.params.id!);
   const knex = await getKnex();
-  const deletedUser = await knex('users').where({ id }).delete();
-  if (!deletedUser) res.status(404).send('User not found');
+  const deletedBoard = await knex('boards').where({ id }).delete();
+  if (!deletedBoard) res.status(404).send('Board not found');
   res.sendStatus(204);
 });
 
 // PATCH
 router.patch('/:id', async (req: Request, res: Response) => {
   const id: number = parseInt(req.params.id!);
-  const { username, role } = req.body;
+  const { type } = req.body;
   const knex = await getKnex();
-  const user = await knex('users').select('*').where({ id }).first();
-  if (!user) res.sendStatus(404);
-  await knex('users').where({ id }).update({
-    username: username || user.username,
-    role: role || user.role
+  const board = await knex('boards').select('*').where({ id }).first();
+  if (!board) res.sendStatus(404);
+  await knex('boards').where({ id }).update({
+    type: type || board.type
   });
   res.sendStatus(200);
 });

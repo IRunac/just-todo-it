@@ -98,7 +98,7 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
-    "noPropertyAccessFromIndexSignature": true /* Enforces using indexed accessors for keys declared using an indexed type. */,
+    "noPropertyAccessFromIndexSignature": false /* Enforces using indexed accessors for keys declared using an indexed type. */,
     "allowUnusedLabels": false,
     "allowUnreachableCode": false,
 

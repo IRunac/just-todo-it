@@ -1,11 +1,13 @@
 module.exports = {
+  plugins: ['@typescript-eslint'],
   root: true,
-  extends: "@extensionengine/eslint-config/base",
+  extends: '@extensionengine/eslint-config/base',
   rules: {
-    "no-control-regex": 0,
+    'no-control-regex': 0
   },
+  parser: '@typescript-eslint/parser',
   parserOptions: {
-    ecmaVersion: "latest",
-    sourceType: "module",
-  },
+    ecmaVersion: 'latest',
+    sourceType: 'module'
+  }
 };

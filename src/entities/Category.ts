@@ -1,34 +1,33 @@
-import { Cascade, Collection, Entity, ManyToMany, ManyToOne, Property } from '@mikro-orm/core';
+import { Collection, Entity, ManyToMany, ManyToOne, Property } from '@mikro-orm/core';
 import { BaseEntity } from './BaseEntity';
-import { User } from './User';
 import { TodoItem } from './TodoItem';
+import { User } from './User';
 
 @Entity()
 export class Category extends BaseEntity {
-
-    @Property()
+  @Property()
     name!: string;
 
-    @Property()
+  @Property()
     color!: string;
 
-    @Property()
+  @Property()
     value!: number;
 
-    @Property()
+  @Property()
     max_value: number = 100;
 
-    @ManyToOne(() => User)
+  @ManyToOne(() => User)
     user!: User;
 
-    @ManyToMany(() => TodoItem, 'categories', { owner: true })
+  @ManyToMany(() => TodoItem, 'categories', { owner: true })
     todo_items = new Collection<TodoItem>(this);
 
-    // constructor(name: string, color: string, value: number, max_value: number) {
-    //     super()
-    //     this.name = name;
-    //     this.color = color;
-    //     this.value = value;
-    //     this.max_value = max_value;
-    // }
+  // constructor(name: string, color: string, value: number, max_value: number) {
+  //     super()
+  //     this.name = name;
+  //     this.color = color;
+  //     this.value = value;
+  //     this.max_value = max_value;
+  // }
 }

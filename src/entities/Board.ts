@@ -4,26 +4,25 @@ import { TodoItem } from './TodoItem';
 import { User } from './User';
 
 export enum BoardType {
-    DAILY = 'daily',
-    WEEKLY = 'weekly',
-    MONTHLY = 'monthly',
-    YEARLY = 'yearly'
-};
+  DAILY = 'daily',
+  WEEKLY = 'weekly',
+  MONTHLY = 'monthly',
+  YEARLY = 'yearly'
+}
 
 @Entity()
 export class Board extends BaseEntity {
-
-    @Enum(() => BoardType)
+  @Enum(() => BoardType)
     type!: BoardType;
 
-    @ManyToOne(() => User)
+  @ManyToOne(() => User)
     user!: User;
 
-    @OneToMany(() => TodoItem, todoItem => todoItem.board)
+  @OneToMany(() => TodoItem, todoItem => todoItem.board)
     todo_items = new Collection<TodoItem>(this);
 
-    // constructor(type: BoardType) {
-    //     super()
-    //     this.type = type;
-    // }
+  // constructor(type: BoardType) {
+  //     super()
+  //     this.type = type;
+  // }
 }
