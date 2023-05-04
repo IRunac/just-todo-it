@@ -10,7 +10,7 @@ export enum ItemStatus {
   DONE = 'done',
 }
 
-@Entity()
+@Entity({ tableName: 'todo_items' })
 export class TodoItem extends BaseEntity {
   @Property()
     name!: string;

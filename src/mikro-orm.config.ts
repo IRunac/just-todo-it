@@ -7,6 +7,7 @@ const options: Options = {
   dbName: 'todo',
   password: 'irunac',
   type: 'postgresql',
+  allowGlobalContext: true,
   driverOptions: {
     connection: knexConfig.connection
   },

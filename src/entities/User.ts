@@ -9,7 +9,7 @@ export enum UserRole {
   USER = 'user',
 }
 
-@Entity()
+@Entity({ tableName: 'users' })
 export class User extends BaseEntity {
   @Property()
     username!: string;

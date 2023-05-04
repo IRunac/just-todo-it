@@ -10,7 +10,7 @@ export enum BoardType {
   YEARLY = 'yearly'
 }
 
-@Entity()
+@Entity({ tableName: 'boards' })
 export class Board extends BaseEntity {
   @Enum(() => BoardType)
     type!: BoardType;

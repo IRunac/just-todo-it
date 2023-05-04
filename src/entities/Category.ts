@@ -3,7 +3,7 @@ import { BaseEntity } from './BaseEntity';
 import { TodoItem } from './TodoItem';
 import { User } from './User';
 
-@Entity()
+@Entity({ tableName: 'categories' })
 export class Category extends BaseEntity {
   @Property()
     name!: string;
