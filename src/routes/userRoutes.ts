@@ -9,7 +9,7 @@ export const userRoutesInit = (DI: any) => {
     const userId: number = parseInt(id);
     const user = await userRepository.findOne({ id: userId });
     if (!user) return res.status(404).send('User not found');
-    req.body = user;
+    req.body.user = user;
     next();
   });
 

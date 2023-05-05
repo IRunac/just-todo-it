@@ -5,7 +5,7 @@ import boardRoutes from './routes/boardRoutes';
 import bodyParser from 'body-parser';
 import categoryRoutes from './routes/categoryRoutes';
 import ormOptions from './mikro-orm.config';
-import todoItemRoutes from './routes/todoItemRoutes';
+import { todoItemRoutesInit } from './routes/todoItemRoutes';
 import { userRoutesInit } from './routes/userRoutes';
 
 const port: number = 3000;
@@ -49,7 +49,7 @@ MikroORM.init(ormOptions)
     app.use('/users', userRoutesInit(DI));
     app.use('/boards', boardRoutes);
     app.use('/categories', categoryRoutes);
-    app.use('/todoItems', todoItemRoutes);
+    app.use('/todoItems', todoItemRoutesInit(DI));
 
     app.listen(port, () => {
       console.log(`⚡️ Server is running at http://localhost:${port}`);

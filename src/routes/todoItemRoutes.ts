@@ -1,77 +1,81 @@
 import express, { Request, Response } from 'express';
-import { EntityRepository } from '@mikro-orm/core';
-import { getOrmInstance } from '../index';
-import { TodoItem } from '../entities/TodoItem';
 
-interface TodoItemRepository extends EntityRepository<TodoItem> {
-  getKnex(): any;
-}
+export const todoItemRoutesInit = (DI: any) => {
+  const todoItemRepository = DI.todoItemRepository;
+  const userRepository = DI.userRepository;
+  const boardRepository = DI.boardRepository;
+  const entityManager = DI.em;
+  const router = express.Router();
 
-async function getKnex() {
-  const orm = await getOrmInstance();
-  const todoItemRepository = orm.em.getRepository(TodoItem) as TodoItemRepository;
-  const knex = todoItemRepository.getKnex();
-  return knex;
-}
-
-const router = express.Router();
-
-// GET ALL
-router.get('/', async (req: Request, res: Response) => {
-  const knex = await getKnex();
-  const todoItems = await knex('todo_items').select('*');
-  res.status(200).send(todoItems);
-});
-
-// GET BY ID
-router.get('/:id', async (req: Request, res: Response) => {
-  const id: number = parseInt(req.params.id!);
-  const knex = await getKnex();
-  const todoItem = await knex('todo_items').select('*').where({ id }).first();
-  if (!todoItem) res.sendStatus(404).send('Todo Item not found');
-  res.status(200).send(todoItem);
-});
-
-// POST
-router.post('/', async (req: Request, res: Response) => {
-  const knex = await getKnex();
-  const newTodoItem: TodoItem = { ...req.body };
-  await knex('todo_items').insert(newTodoItem);
-  res.sendStatus(201);
-});
-
-// DELETE
-router.delete('/:id', async (req: Request, res: Response) => {
-  const id: number = parseInt(req.params.id!);
-  const knex = await getKnex();
-  const deletedTodoItem = await knex('todo_items').where({ id }).delete();
-  if (!deletedTodoItem) res.status(404).send('Todo Item not found');
-  res.sendStatus(204);
-});
-
-// PATCH
-router.patch('/:id', async (req: Request, res: Response) => {
-  const id: number = parseInt(req.params.id!);
-  const {
-    name,
-    status,
-    completed_increment: completedIncrement,
-    failed_increment: failedIncrement,
-    user_id: userId,
-    board_id: boardId
-  } = req.body;
-  const knex = await getKnex();
-  const todoItem = await knex('todo_items').select('*').where({ id }).first();
-  if (!todoItem) res.sendStatus(404);
-  await knex('todo_items').where({ id }).update({
-    name: name || todoItem.name,
-    status: status || todoItem.status,
-    completed_increment: completedIncrement || todoItem.completed_increment,
-    failed_increment: failedIncrement || todoItem.failed_increment,
-    board_id: boardId || todoItem.board_id,
-    user_id: userId || todoItem.user_id
+  router.param('id', async (req: Request, res: Response, next, id) => {
+    const todoItemId: number = parseInt(id);
+    const todoItem = await todoItemRepository.findOne({ id: todoItemId });
+    if (!todoItem) return res.status(404).send('Todo Item not found');
+    req.body.todoItem = todoItem;
+    next();
   });
-  res.sendStatus(200);
-});
 
-export default router;
+  // GET ALL
+  router.get('/', async (req: Request, res: Response) => {
+    const todoItems = await todoItemRepository.findAll();
+    res.status(200).send(todoItems);
+  });
+
+  // GET BY ID
+  router.get('/:id', async (req: Request, res: Response) => {
+    return res.status(200).send(req.body.todoItem);
+  });
+
+  // POST
+  router.post('/', async (req: Request, res: Response) => {
+    const {
+      name,
+      status,
+      completed_increment: completedIncrement,
+      failed_increment: failedIncrement,
+      user_id: userId,
+      board_id: boardId
+    } = req.body;
+    const user = await userRepository.findOne({ id: userId });
+    const board = await boardRepository.findOne({ id: boardId });
+    const newTodoItem = {
+      name,
+      status,
+      completed_increment: completedIncrement,
+      failed_increment: failedIncrement,
+      user,
+      board
+    };
+    await todoItemRepository.create(newTodoItem);
+    res.sendStatus(201);
+  });
+
+  // DELETE
+  router.delete('/:id', async (req: Request, res: Response) => {
+    await entityManager.removeAndFlush(req.body.todoItem);
+    return res.sendStatus(204);
+  });
+
+  // PATCH
+  router.patch('/:id', async (req: Request, res: Response) => {
+    const {
+      name,
+      status,
+      completed_increment: completedIncrement,
+      failed_increment: failedIncrement,
+      user_id: userId,
+      board_id: boardId,
+      todoItem
+    } = req.body;
+    todoItem.name = name || todoItem.name;
+    todoItem.status = status || todoItem.status;
+    todoItem.completed_increment = completedIncrement || todoItem.completed_increment;
+    todoItem.failed_increment = failedIncrement || todoItem.failed_increment;
+    todoItem.board_id = boardId || todoItem.board_id;
+    todoItem.user_id = userId || todoItem.user_id;
+    await entityManager.persistAndFlush(todoItem);
+    return res.sendStatus(200);
+  });
+
+  return router;
+};
