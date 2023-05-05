@@ -1,7 +1,7 @@
 import { Board, Category, TodoItem, User } from './entities';
 import { EntityManager, EntityRepository, MikroORM } from '@mikro-orm/core';
 import express, { Express, Request, Response } from 'express';
-import boardRoutes from './routes/boardRoutes';
+import { boardRoutesInit } from './routes/boardRoutes';
 import bodyParser from 'body-parser';
 import categoryRoutes from './routes/categoryRoutes';
 import ormOptions from './mikro-orm.config';
@@ -47,7 +47,7 @@ MikroORM.init(ormOptions)
     });
 
     app.use('/users', userRoutesInit(DI));
-    app.use('/boards', boardRoutes);
+    app.use('/boards', boardRoutesInit(DI));
     app.use('/categories', categoryRoutes);
     app.use('/todoItems', todoItemRoutesInit(DI));
 
