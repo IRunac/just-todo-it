@@ -1,119 +1,105 @@
 import express, { Request, Response } from 'express';
 import { Category } from '../entities/Category';
-import { EntityRepository } from '@mikro-orm/core';
-import { getOrmInstance } from '../index';
 
-interface CategoryRepository extends EntityRepository<Category> {
-  getKnex(): any;
-}
+export const categoryRoutesInit = (DI: any) => {
+  const categoryRepository = DI.categoryRepository;
+  const todoItemRepository = DI.todoItemRepository;
+  const entityManager = DI.em;
+  const router = express.Router();
 
-async function getKnex() {
-  const orm = await getOrmInstance();
-  const categoryRepository = orm.em.getRepository(Category) as CategoryRepository;
-  const knex = categoryRepository.getKnex();
-  return knex;
-}
-
-export const router = express.Router();
-
-// GET ALL
-router.get('/', async (req: Request, res: Response) => {
-  const knex = await getKnex();
-  const categories = await knex('categories').select('*');
-  res.status(200).send(categories);
-});
-
-// GET BY ID
-router.get('/:id', async (req: Request, res: Response) => {
-  const id: number = parseInt(req.params.id!);
-  const knex = await getKnex();
-  const category = await knex('categories').select('*').where({ id }).first();
-  if (!category) res.sendStatus(404).send('Category not found');
-  res.status(200).send(category);
-});
-
-// POST
-router.post('/', async (req: Request, res: Response) => {
-  const knex = await getKnex();
-  const newCategory: Category = { ...req.body };
-  await knex('categories').insert(newCategory);
-  res.sendStatus(201);
-});
-
-// DELETE
-router.delete('/:id', async (req: Request, res: Response) => {
-  const id: number = parseInt(req.params.id!);
-  const knex = await getKnex();
-  const deletedCategory = await knex('categories').where({ id }).delete();
-  if (!deletedCategory) res.status(404).send('Category not found');
-  res.sendStatus(204);
-});
-
-// PATCH
-router.patch('/:id', async (req: Request, res: Response) => {
-  const id: number = parseInt(req.params.id!);
-  const { name, color, value, max_value: maxValue, user_id: userId } = req.body;
-  const knex = await getKnex();
-  const category = await knex('categories').select('*').where({ id }).first();
-  if (!category) res.sendStatus(404);
-  await knex('categories').where({ id }).update({
-    name: name || category.name,
-    color: color || category.color,
-    value: value || category.value,
-    max_value: maxValue || category.max_value,
-    user_id: userId || category.user_id
+  router.param('id', async (req: Request, res: Response, next, id) => {
+    const categoryId: number = parseInt(id);
+    const searchString = 'todoItem';
+    const isTodoItemRoute = req.originalUrl.includes(searchString);
+    const category = await categoryRepository.findOne(
+      { id: categoryId },
+      { populate: isTodoItemRoute ? ['todo_items'] : [] }
+    );
+    if (!category) return res.status(404).send('Category not found');
+    req.body.category = category;
+    next();
   });
-  res.sendStatus(200);
-});
 
-// categories_todo_items routes
+  router.param('itemId', async (req: Request, res: Response, next, id) => {
+    const itemId: number = parseInt(id);
+    const todoItem = await todoItemRepository.findOne({ id: itemId });
+    if (!todoItem) return res.status(404).send('Todo Item not found');
+    req.body.todoItem = todoItem;
+    next();
+  });
 
-// GET BY ID
-router.get('/:id/todoItems', async (req: Request, res: Response) => {
-  const id: number = parseInt(req.params.id!);
-  const knex = await getKnex();
-  const categories = await knex('categories_todo_items')
-    .select('*')
-    .where({ category_id: id });
-  res.status(200).send(categories);
-});
+  router.use('/:id/todoItems', (req: Request, res: Response, next) => {
+    req.body.todoItems = req.body.category.todo_items.getItems();
+    next();
+  });
 
-// POST
-router.post('/:id/todoItems', async (req: Request, res: Response) => {
-  const knex = await getKnex();
-  const categoryId: number = parseInt(req.params.id!);
-  const { todo_item_id: todoItemId } = req.body;
-  console.log(categoryId, todoItemId);
-  await knex('categories_todo_items').insert({ category_id: categoryId, todo_item_id: todoItemId });
-  res.sendStatus(201);
-});
+  // GET ALL
+  router.get('/', async (req: Request, res: Response) => {
+    const categories = await categoryRepository.findAll();
+    res.status(200).send(categories);
+  });
 
-// DELETE
-router.delete('/:id/todoItems/:itemId', async (req: Request, res: Response) => {
-  const categoryId: number = parseInt(req.params.id!);
-  const todoItemId: number = parseInt(req.params.itemId!);
-  const knex = await getKnex();
-  const deletedCategory = await knex('categories_todo_items').where({
-    category_id: categoryId, todo_item_id: todoItemId
-  }).delete();
-  if (!deletedCategory) res.status(404).send('Category - TodoItem relation not found');
-  res.sendStatus(204);
-});
+  // GET BY ID
+  router.get('/:id', async (req: Request, res: Response) => {
+    res.status(200).send(req.body.category);
+  });
 
-// PATCH
-router.patch('/:id/todoItems/:itemId', async (req: Request, res: Response) => {
-  const categoryId: number = parseInt(req.params.id!);
-  const todoItemId: number = parseInt(req.params.itemId!);
-  const { todo_item_id: newTodoItemId } = req.body;
-  const knex = await getKnex();
-  const category = await knex('categories_todo_items').select('*').where({
-    category_id: categoryId, todo_item_id: todoItemId
-  }).first();
-  if (!category) res.sendStatus(404);
-  await knex('categories_todo_items')
-    .where({ category_id: categoryId, todo_item_id: todoItemId })
-    .update({ todo_item_id: newTodoItemId });
-  res.sendStatus(200);
-});
+  // POST
+  router.post('/', async (req: Request, res: Response) => {
+    const newCategory: Category = { ...req.body };
+    await categoryRepository.insert(newCategory);
+    res.sendStatus(201);
+  });
 
-export default router;
+  // DELETE
+  router.delete('/:id', async (req: Request, res: Response) => {
+    await entityManager.removeAndFlush(req.body.category);
+    res.sendStatus(204);
+  });
+
+  // PATCH
+  router.patch('/:id', async (req: Request, res: Response) => {
+    const { name, color, value, max_value: maxValue, user_id: userId, category } = req.body;
+    category.name = name || category.name;
+    category.color = color || category.color;
+    category.value = value || category.value;
+    category.max_value = maxValue || category.max_value;
+    category.user_id = userId || category.user_id;
+    await entityManager.persistAndFlush(category);
+    res.sendStatus(200);
+  });
+
+  // CATEGORY - TODO ITEMS routes
+
+  // GET ALL ITEMS BY CATEGORY ID
+  router.get('/:id/todoItems', async (req: Request, res: Response) => {
+    res.status(200).send(req.body.todoItems);
+  });
+
+  // POST
+  router.post('/:id/todoItems', async (req: Request, res: Response) => {
+    const { todo_item_id: todoItemId } = req.body;
+    const todoItem = await todoItemRepository.findOne({ id: todoItemId });
+    if (!todoItem) return res.status(404).send('Todo Item not found');
+    req.body.category.todo_items.add(todoItem);
+    return res.sendStatus(201);
+  });
+
+  // DELETE
+  router.delete('/:id/todoItems/:itemId', async (req: Request, res: Response) => {
+    req.body.category.todo_items.remove(req.body.todoItem);
+    return res.sendStatus(204);
+  });
+
+  // PATCH
+  router.patch('/:id/todoItems/:itemId', async (req: Request, res: Response) => {
+    const { todo_item_id: newTodoItemId } = req.body;
+    const newTodoItem = await todoItemRepository.findOne({ id: newTodoItemId });
+    if (!newTodoItem) return res.status(404).send('Todo Item not found');
+    req.body.category.todo_items.remove(req.body.todoItem);
+    req.body.category.todo_items.add(newTodoItem);
+    return res.sendStatus(200);
+  });
+
+  return router;
+};

@@ -9,7 +9,6 @@ export const boardRoutesInit = (DI: any) => {
   router.param('id', async (req: Request, res: Response, next, id) => {
     const boardId: number = parseInt(id);
     const board = await boardRepository.findOne({ id: boardId });
-    console.log(board);
     if (!board) return res.status(404).send('Board not found');
     req.body.board = board;
     next();
