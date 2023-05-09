@@ -2,7 +2,6 @@ import express, { Request, Response } from 'express';
 
 export const userRoutesInit = (DI: any) => {
   const userRepository = DI.userRepository;
-  const entityManager = DI.em;
   const router = express.Router();
 
   router.param('id', async (req: Request, res: Response, next, id) => {
@@ -33,7 +32,7 @@ export const userRoutesInit = (DI: any) => {
 
   // DELETE
   router.delete('/:id', async (req: Request, res: Response) => {
-    await entityManager.removeAndFlush(req.body.user);
+    await userRepository.removeAndFlush(req.body.user);
     return res.sendStatus(204);
   });
 
@@ -42,7 +41,7 @@ export const userRoutesInit = (DI: any) => {
     const { user, username, role } = req.body;
     user.username = username || user.username;
     user.role = role || user.role;
-    await entityManager.persistAndFlush(user);
+    await userRepository.persistAndFlush(user);
     return res.sendStatus(200);
   });
 

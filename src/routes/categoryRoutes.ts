@@ -4,7 +4,6 @@ import { Category } from '../entities/Category';
 export const categoryRoutesInit = (DI: any) => {
   const categoryRepository = DI.categoryRepository;
   const todoItemRepository = DI.todoItemRepository;
-  const entityManager = DI.em;
   const router = express.Router();
 
   router.param('id', async (req: Request, res: Response, next, id) => {
@@ -53,7 +52,7 @@ export const categoryRoutesInit = (DI: any) => {
 
   // DELETE
   router.delete('/:id', async (req: Request, res: Response) => {
-    await entityManager.removeAndFlush(req.body.category);
+    await categoryRepository.removeAndFlush(req.body.category);
     res.sendStatus(204);
   });
 
@@ -65,7 +64,7 @@ export const categoryRoutesInit = (DI: any) => {
     category.value = value || category.value;
     category.max_value = maxValue || category.max_value;
     category.user_id = userId || category.user_id;
-    await entityManager.persistAndFlush(category);
+    await categoryRepository.persistAndFlush(category);
     res.sendStatus(200);
   });
 

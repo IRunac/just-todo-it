@@ -3,7 +3,6 @@ import express, { Request, Response } from 'express';
 export const boardRoutesInit = (DI: any) => {
   const boardRepository = DI.boardRepository;
   const userRepository = DI.userRepository;
-  const entityManager = DI.em;
   const router = express.Router();
 
   router.param('id', async (req: Request, res: Response, next, id) => {
@@ -36,7 +35,7 @@ export const boardRoutesInit = (DI: any) => {
 
   // DELETE
   router.delete('/:id', async (req: Request, res: Response) => {
-    await entityManager.removeAndFlush(req.body.board);
+    await boardRepository.removeAndFlush(req.body.board);
     return res.sendStatus(204);
   });
 
@@ -44,7 +43,7 @@ export const boardRoutesInit = (DI: any) => {
   router.patch('/:id', async (req: Request, res: Response) => {
     const { type, board } = req.body;
     board.type = type || board.type;
-    await entityManager.persistAndFlush(board);
+    await boardRepository.persistAndFlush(board);
     return res.sendStatus(200);
   });
 

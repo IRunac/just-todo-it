@@ -4,7 +4,6 @@ export const todoItemRoutesInit = (DI: any) => {
   const todoItemRepository = DI.todoItemRepository;
   const userRepository = DI.userRepository;
   const boardRepository = DI.boardRepository;
-  const entityManager = DI.em;
   const router = express.Router();
 
   router.param('id', async (req: Request, res: Response, next, id) => {
@@ -52,7 +51,7 @@ export const todoItemRoutesInit = (DI: any) => {
 
   // DELETE
   router.delete('/:id', async (req: Request, res: Response) => {
-    await entityManager.removeAndFlush(req.body.todoItem);
+    await todoItemRepository.removeAndFlush(req.body.todoItem);
     return res.sendStatus(204);
   });
 
@@ -73,7 +72,7 @@ export const todoItemRoutesInit = (DI: any) => {
     todoItem.failed_increment = failedIncrement || todoItem.failed_increment;
     todoItem.board_id = boardId || todoItem.board_id;
     todoItem.user_id = userId || todoItem.user_id;
-    await entityManager.persistAndFlush(todoItem);
+    await todoItemRepository.persistAndFlush(todoItem);
     return res.sendStatus(200);
   });
 
