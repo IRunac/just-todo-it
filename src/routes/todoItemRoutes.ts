@@ -1,9 +1,12 @@
 import express, { Request, Response } from 'express';
+import { DependecyInjection } from '../index';
+import { TodoItem } from '../entities/TodoItem';
 
-export const todoItemRoutesInit = (DI: any) => {
+export const todoItemRoutesInit = (DI: DependecyInjection) => {
   const todoItemRepository = DI.todoItemRepository;
   const userRepository = DI.userRepository;
   const boardRepository = DI.boardRepository;
+  const entityManager = DI.em;
   const router = express.Router();
 
   router.param('id', async (req: Request, res: Response, next, id) => {
@@ -44,14 +47,14 @@ export const todoItemRoutesInit = (DI: any) => {
       failed_increment: failedIncrement,
       user,
       board
-    };
+    } as TodoItem;
     await todoItemRepository.create(newTodoItem);
     res.sendStatus(201);
   });
 
   // DELETE
   router.delete('/:id', async (req: Request, res: Response) => {
-    await todoItemRepository.removeAndFlush(req.body.todoItem);
+    await entityManager.removeAndFlush(req.body.todoItem);
     return res.sendStatus(204);
   });
 
@@ -66,13 +69,13 @@ export const todoItemRoutesInit = (DI: any) => {
       board_id: boardId,
       todoItem
     } = req.body;
-    todoItem.name = name || todoItem.name;
-    todoItem.status = status || todoItem.status;
-    todoItem.completed_increment = completedIncrement || todoItem.completed_increment;
-    todoItem.failed_increment = failedIncrement || todoItem.failed_increment;
-    todoItem.board_id = boardId || todoItem.board_id;
-    todoItem.user_id = userId || todoItem.user_id;
-    await todoItemRepository.persistAndFlush(todoItem);
+    todoItem.name ??= name;
+    todoItem.status ??= status;
+    todoItem.completed_increment ??= completedIncrement;
+    todoItem.failed_increment ??= failedIncrement;
+    todoItem.board_id ??= boardId;
+    todoItem.user_id ??= userId;
+    await entityManager.persistAndFlush(todoItem);
     return res.sendStatus(200);
   });
 

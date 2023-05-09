@@ -3,6 +3,7 @@ import { DependecyInjection } from '../index';
 
 export const userRoutesInit = (DI: DependecyInjection) => {
   const userRepository = DI.userRepository;
+  const entityManager = DI.em;
   const router = express.Router();
 
   router.param('id', async (req: Request, res: Response, next, id) => {
@@ -33,7 +34,7 @@ export const userRoutesInit = (DI: DependecyInjection) => {
 
   // DELETE
   router.delete('/:id', async (req: Request, res: Response) => {
-    await userRepository.removeAndFlush(req.body.user);
+    await entityManager.removeAndFlush(req.body.user);
     return res.sendStatus(204);
   });
 
@@ -42,7 +43,7 @@ export const userRoutesInit = (DI: DependecyInjection) => {
     const { user, username, role } = req.body;
     user.username = username || user.username;
     user.role = role || user.role;
-    await userRepository.persistAndFlush(user);
+    await entityManager.persistAndFlush(user);
     return res.sendStatus(200);
   });
 

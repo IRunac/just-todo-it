@@ -1,8 +1,10 @@
 import express, { Request, Response } from 'express';
+import { DependecyInjection } from '../index';
 
-export const categoryRoutesInit = (DI: any) => {
+export const categoryRoutesInit = (DI: DependecyInjection) => {
   const categoryRepository = DI.categoryRepository;
   const todoItemRepository = DI.todoItemRepository;
+  const entityManager = DI.em;
   const router = express.Router();
 
   router.param('id', async (req: Request, res: Response, next, id) => {
@@ -51,7 +53,7 @@ export const categoryRoutesInit = (DI: any) => {
 
   // DELETE
   router.delete('/:id', async (req: Request, res: Response) => {
-    await categoryRepository.removeAndFlush(req.body.category);
+    await entityManager.removeAndFlush(req.body.category);
     res.sendStatus(204);
   });
 
@@ -63,7 +65,7 @@ export const categoryRoutesInit = (DI: any) => {
     category.value = value || category.value;
     category.max_value = maxValue || category.max_value;
     category.user_id = userId || category.user_id;
-    await categoryRepository.persistAndFlush(category);
+    await entityManager.persistAndFlush(category);
     res.sendStatus(200);
   });
 

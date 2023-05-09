@@ -1,8 +1,11 @@
 import express, { Request, Response } from 'express';
+import { Board } from '../entities/Board';
+import { DependecyInjection } from '../index';
 
-export const boardRoutesInit = (DI: any) => {
+export const boardRoutesInit = (DI: DependecyInjection) => {
   const boardRepository = DI.boardRepository;
   const userRepository = DI.userRepository;
+  const entityManager = DI.em;
   const router = express.Router();
 
   router.param('id', async (req: Request, res: Response, next, id) => {
@@ -27,15 +30,15 @@ export const boardRoutesInit = (DI: any) => {
   // POST
   router.post('/', async (req: Request, res: Response) => {
     const { type, user_id: userId } = req.body;
-    const user = await userRepository.findOne({ id: userId });
-    const newBoard = { type, user };
+    const user = await userRepository.findOneOrFail({ id: userId });
+    const newBoard = { type, user } as Board;
     await boardRepository.create(newBoard);
     res.sendStatus(201);
   });
 
   // DELETE
   router.delete('/:id', async (req: Request, res: Response) => {
-    await boardRepository.removeAndFlush(req.body.board);
+    await entityManager.removeAndFlush(req.body.board);
     return res.sendStatus(204);
   });
 
@@ -43,7 +46,7 @@ export const boardRoutesInit = (DI: any) => {
   router.patch('/:id', async (req: Request, res: Response) => {
     const { type, board } = req.body;
     board.type = type || board.type;
-    await boardRepository.persistAndFlush(board);
+    await entityManager.persistAndFlush(board);
     return res.sendStatus(200);
   });
 
