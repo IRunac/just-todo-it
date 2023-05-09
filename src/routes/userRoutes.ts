@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
+import { DependecyInjection } from '../index';
 
-export const userRoutesInit = (DI: any) => {
+export const userRoutesInit = (DI: DependecyInjection) => {
   const userRepository = DI.userRepository;
   const router = express.Router();
 

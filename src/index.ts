@@ -1,17 +1,20 @@
+import 'dotenv/config';
 import { Board, Category, TodoItem, User } from './entities';
 import { EntityManager, EntityRepository, MikroORM } from '@mikro-orm/core';
 import express, { Express, Request, Response } from 'express';
 import { boardRoutesInit } from './routes/boardRoutes';
 import bodyParser from 'body-parser';
 import { categoryRoutesInit } from './routes/categoryRoutes';
+import dotenv from 'dotenv';
 import ormOptions from './mikro-orm.config';
 import { todoItemRoutesInit } from './routes/todoItemRoutes';
 import { userRoutesInit } from './routes/userRoutes';
 
-const port: number = 3000;
+dotenv.config();
 const app: Express = express();
+const port = process.env.PORT || 5000;
 
-interface DependecyInjection {
+export interface DependecyInjection {
   orm: MikroORM,
   em: EntityManager,
   userRepository: EntityRepository<User>,
@@ -40,7 +43,6 @@ MikroORM.init(ormOptions)
     app.use('/boards', boardRoutesInit(DI));
     app.use('/categories', categoryRoutesInit(DI));
     app.use('/todoItems', todoItemRoutesInit(DI));
-
     app.listen(port, () => {
       console.log(`⚡️ Server is running at http://localhost:${port}`);
     });

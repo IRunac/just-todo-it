@@ -1,5 +1,4 @@
 import express, { Request, Response } from 'express';
-import { Category } from '../entities/Category';
 
 export const categoryRoutesInit = (DI: any) => {
   const categoryRepository = DI.categoryRepository;
@@ -45,8 +44,8 @@ export const categoryRoutesInit = (DI: any) => {
 
   // POST
   router.post('/', async (req: Request, res: Response) => {
-    const newCategory: Category = { ...req.body };
-    await categoryRepository.insert(newCategory);
+    const newCategory = { ...req.body };
+    await categoryRepository.create(newCategory);
     res.sendStatus(201);
   });
 
