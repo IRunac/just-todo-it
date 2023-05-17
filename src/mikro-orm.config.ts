@@ -1,5 +1,4 @@
 import { Configuration, Options } from '@mikro-orm/core';
-import knexConfig from './knexfile';
 
 const options: Options = {
   entities: ['./dist/entities'],
@@ -7,10 +6,7 @@ const options: Options = {
   dbName: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   type: process.env.DB_TYPE as keyof typeof Configuration.PLATFORMS,
-  allowGlobalContext: true,
-  driverOptions: {
-    connection: knexConfig.connection
-  }
+  allowGlobalContext: true
   // migrations: {
   //   path: './dist/migrations', // path to the folder with migrations
   //   pathTs: './src/migrations', // path to the folder with TS migrations (if used, we should put path to compiled files in `path`)

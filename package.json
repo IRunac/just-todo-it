@@ -4,9 +4,10 @@
   "description": "Gamified todo customizable list",
   "main": "./dist",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start:dev": "concurrently \"tsc -watch\" nodemon index.js",
-    "start:dev2": "nodemon"
+    "start": "concurrently 'npm run backend:dev' 'npm run frontend:dev'",
+    "frontend:dev": "vite",
+    "backend:dev": "nodemon index.js",
+    "build": "vite build"
   },
   "repository": {
     "type": "git",
@@ -28,7 +29,8 @@
     "express": "^4.18.2",
     "knex": "^2.4.2",
     "pg": "^8.10.0",
-    "ts-node": "^10.9.1"
+    "ts-node": "^10.9.1",
+    "vue": "^3.2.36"
   },
   "devDependencies": {
     "@extensionengine/eslint-config": "^3.0.1",
@@ -36,10 +38,14 @@
     "@types/node": "^18.15.11",
     "@typescript-eslint/eslint-plugin": "^5.59.2",
     "@typescript-eslint/parser": "^5.59.2",
+    "@vitejs/plugin-vue": "^4.2.1",
+    "@vue/compiler-sfc": "^3.3.1",
     "concurrently": "^8.0.1",
     "eslint": "^8.39.0",
     "eslint-plugin-promise": "^6.1.1",
     "nodemon": "^2.0.22",
-    "typescript": "^5.0.4"
+    "typescript": "^5.0.4",
+    "vite": "^4.3.5",
+    "vue-tsc": "^1.6.4"
   }
 }

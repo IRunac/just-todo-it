@@ -7,8 +7,10 @@ import bodyParser from 'body-parser';
 import { categoryRoutesInit } from './routes/categoryRoutes';
 import dotenv from 'dotenv';
 import ormOptions from './mikro-orm.config';
+import path from 'path';
 import { todoItemRoutesInit } from './routes/todoItemRoutes';
 import { userRoutesInit } from './routes/userRoutes';
+const { createServer, ViteDevServer } = require('vite');
 
 dotenv.config();
 const app: Express = express();
@@ -35,15 +37,25 @@ MikroORM.init(ormOptions)
 
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: false }));
-    app.get('/', (req: Request, res: Response) => {
-      res.send('Welcomen to basic Users CRUD example!');
-    });
 
-    app.use('/users', userRoutesInit(DI));
-    app.use('/boards', boardRoutesInit(DI));
-    app.use('/categories', categoryRoutesInit(DI));
-    app.use('/todoItems', todoItemRoutesInit(DI));
-    app.listen(port, () => {
-      console.log(`⚡️ Server is running at http://localhost:${port}`);
-    });
+    createServer({ server: { middlewareMode: true } })
+      .then((viteServer: typeof ViteDevServer) => {
+        console.log('create server');
+        app.use(viteServer.middlewares);
+
+        app.get('/', (req: Request, res: Response) => {
+          console.log('base route');
+          res.sendFile(path.resolve(__dirname, 'client', 'index.html'));
+        });
+
+        app.use('/users', userRoutesInit(DI));
+        app.use('/boards', boardRoutesInit(DI));
+        app.use('/categories', categoryRoutesInit(DI));
+        app.use('/todoItems', todoItemRoutesInit(DI));
+
+        app.listen(port, () => {
+          console.log(path.join(__dirname, 'client', 'index.html'));
+          console.log(`⚡️ Server is running at http://localhost:${port}`);
+        });
+      });
   });
