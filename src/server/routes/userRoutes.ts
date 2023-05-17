@@ -13,7 +13,10 @@ export const userRoutesInit = (DI: DependecyInjection) => {
 
   router.param('id', async (req: UserRequest, res: Response, next, id) => {
     const userId: number = parseInt(id);
-    const user = await userRepository.findOne({ id: userId });
+    const user = await userRepository.findOne(
+      { id: userId },
+      { populate: ['todo_items'] }
+    );
     if (!user) return res.status(404).send('User not found');
     req.user = user;
     next();
