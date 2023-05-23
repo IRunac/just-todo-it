@@ -1,9 +1,11 @@
 import express, { Request, Response } from 'express';
 import { DependecyInjection } from '../index';
+import { Category } from '../entities';
 
 export const categoryRoutesInit = (DI: DependecyInjection) => {
   const categoryRepository = DI.categoryRepository;
   const todoItemRepository = DI.todoItemRepository;
+  const userRepository = DI.userRepository;
   const entityManager = DI.em;
   const router = express.Router();
 
@@ -46,7 +48,9 @@ export const categoryRoutesInit = (DI: DependecyInjection) => {
 
   // POST
   router.post('/', async (req: Request, res: Response) => {
-    const newCategory = { ...req.body };
+    const { name, color, value, user_id: userId } = req.body;
+    const user = await userRepository.findOne({ id: userId });
+    const newCategory = { name, user, color, value } as Category;
     await categoryRepository.create(newCategory);
     res.sendStatus(201);
   });

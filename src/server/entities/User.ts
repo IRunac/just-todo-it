@@ -17,6 +17,12 @@ export class User extends BaseEntity {
   @Enum(() => UserRole)
     role!: UserRole;
 
+  @Property()
+    password!: string;
+
+  @Property()
+    salt!: string;
+
   @OneToMany(() => Board, board => board.user, { cascade: [Cascade.ALL] })
     boards = new Collection<Board>(this);
 

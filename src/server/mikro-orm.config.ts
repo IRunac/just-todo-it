@@ -1,11 +1,17 @@
+import 'dotenv/config';
 import { Configuration, Options } from '@mikro-orm/core';
 
+const dbName = process.env.DB_NAME || 'todo';
+const password = process.env.DB_PASSWORD || 'irunac';
+const type = process.env.DB_TYPE as keyof typeof Configuration.PLATFORMS || 'postgresql';
+
 const options: Options = {
-  entities: ['./src/dist/entities'],
+  entities: ['../dist/server/entities'],
+  // entitiesTs: ['./entities'],
   entitiesTs: ['./src/server/entities'],
-  dbName: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  type: process.env.DB_TYPE as keyof typeof Configuration.PLATFORMS,
+  dbName,
+  password,
+  type,
   allowGlobalContext: true
   // migrations: {
   //   path: './dist/migrations', // path to the folder with migrations
