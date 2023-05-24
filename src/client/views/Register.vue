@@ -3,7 +3,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 
 export default {
-  name: 'Login',
+  name: 'Register',
   data() {
     return {
       username: '',
@@ -12,11 +12,11 @@ export default {
     }
   },
   methods: {
-    async login(event) {
+    async register(event) {
       event.preventDefault();
       try {
         const { username, password } = this;
-        await axios.post(`/api/auth/login`, { username, password }).then(response => {
+        await axios.post(`/api/auth/register`, { username, password }).then(response => {
           console.log(response);
           const { token } = response.data;
           Cookies.set('jwtToken', token);
@@ -32,15 +32,15 @@ export default {
 </script>
 
 <template>
-  <h3>Login</h3>
-  <form @submit="login" class="form">
+  <h3>Register</h3>
+  <form @submit="register" class="form">
     <label for="username">Username</label>
     <input v-model="username" name="username">
     <label for="password">Password</label>
     <input v-model="password" name="password">
-    <button type="submit">Login</button>
+    <button type="submit">Register</button>
   </form>
-  <div class="error" v-show="isError">Invalid username or password.</div>
+  <div class="error" v-show="isError">User with that username already exists.</div>
 </template>
 
 <style lang="scss">

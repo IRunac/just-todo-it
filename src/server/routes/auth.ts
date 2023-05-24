@@ -3,6 +3,8 @@ import crypto from 'crypto';
 import { DependecyInjection } from '../index';
 import express from 'express';
 import jwt from 'jsonwebtoken';
+import { UserRole } from '../entities/User';
+import { comparePassword } from '../helpers/auth_helpers';
 
 export const authRoutesInit = (DI: DependecyInjection) => {
   const router = express.Router();
@@ -28,14 +30,32 @@ export const authRoutesInit = (DI: DependecyInjection) => {
     const payload = { username };
     const user = await DI.userRepository.findOne({ username });
     if (!user) return res.sendStatus(401);
-
-    const hashedPassword = crypto.pbkdf2Sync(password, user.salt, 310000, 32, 'sha256').toString('hex');
-    const isMatch = hashedPassword === user.password;
+    const isMatch = comparePassword(user, password);
     if (isMatch) {
       const token = jwt.sign(payload, process.env.SECRET_KEY as jwt.Secret);
       return res.status(200).json({ token }).send();
     }
     return res.sendStatus(401);
+  });
+
+  router.post('/register', async (req, res) => {
+    const { username, password } = req.body;
+    const payload = { username };
+    const user = await DI.userRepository.findOne({ username });
+    if (user) return res.sendStatus(409);
+    const salt = crypto.randomBytes(16).toString('hex');
+    const hashedPassword = crypto.pbkdf2Sync(password, salt, 310000, 32, 'sha256').toString('hex');
+    const newUser = {
+      username,
+      salt,
+      password: hashedPassword,
+      role: UserRole.USER,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
+    await DI.userRepository.create(newUser);
+    const token = jwt.sign(payload, process.env.SECRET_KEY as jwt.Secret);
+    return res.status(200).json({ token }).send();
   });
 
   return router;

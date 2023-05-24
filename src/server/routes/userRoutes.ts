@@ -1,5 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express';
 import { DependecyInjection } from '../index';
+import { isAuthenticated } from '../helpers/auth_helpers';
 
 export const userRoutesInit = (DI: DependecyInjection) => {
   const userRepository = DI.userRepository;
@@ -28,7 +29,7 @@ export const userRoutesInit = (DI: DependecyInjection) => {
   });
 
   // GET BY ID
-  router.get('/:id', DI.passport.authenticate(('jwt'), { session: false }), async (req: Request, res: Response) => {
+  router.get('/:id', isAuthenticated(DI.passport), async (req: Request, res: Response) => {
     return res.status(200).send(req.body.user);
   });
 
