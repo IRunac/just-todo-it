@@ -1,6 +1,5 @@
 <script>
 import axios from 'axios';
-import Cookies from 'js-cookie';
 
 export default {
   name: 'Login',
@@ -19,7 +18,6 @@ export default {
         await axios.post(`/api/auth/login`, { username, password }).then(response => {
           console.log(response);
           const { token } = response.data;
-          Cookies.set('jwtToken', token);
           this.$router.push('/');
         });
       } catch (error) {

@@ -1,10 +1,10 @@
 import { ExtractJwt, Strategy as JwtStrategy, StrategyOptions } from 'passport-jwt';
+import { comparePassword } from '../helpers/auth_helpers';
 import crypto from 'crypto';
 import { DependecyInjection } from '../index';
 import express from 'express';
 import jwt from 'jsonwebtoken';
 import { UserRole } from '../entities/User';
-import { comparePassword } from '../helpers/auth_helpers';
 
 export const authRoutesInit = (DI: DependecyInjection) => {
   const router = express.Router();
@@ -33,7 +33,7 @@ export const authRoutesInit = (DI: DependecyInjection) => {
     const isMatch = comparePassword(user, password);
     if (isMatch) {
       const token = jwt.sign(payload, process.env.SECRET_KEY as jwt.Secret);
-      return res.status(200).json({ token }).send();
+      return res.cookie('jwtToken', token).status(200).json({ token }).send();
     }
     return res.sendStatus(401);
   });
@@ -55,7 +55,7 @@ export const authRoutesInit = (DI: DependecyInjection) => {
     };
     await DI.userRepository.create(newUser);
     const token = jwt.sign(payload, process.env.SECRET_KEY as jwt.Secret);
-    return res.status(200).json({ token }).send();
+    return res.cookie('jwtToken', token).status(200).json({ token }).send();
   });
 
   return router;
