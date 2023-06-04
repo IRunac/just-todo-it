@@ -10,8 +10,7 @@ let password = '';
 const login = async (event) => {
   event.preventDefault();
   try {
-    await userStore.login(username, password);
-    localStorage.setItem('user', JSON.stringify(userStore.user));
+    await userStore.loginUser(username, password);
     router.push('/');
   } catch (error) {
     isError = true;

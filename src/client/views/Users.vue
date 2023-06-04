@@ -8,7 +8,6 @@ const users = ref([])
 onMounted(async() => {
   const token = Cookies.get('jwtToken');
   await axios.get(`/api/users`, { headers: {"Authorization" : `Bearer ${token}`} }).then(response => {
-    console.log(response);
     users.value = response.data;
   });
 

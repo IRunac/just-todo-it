@@ -18,13 +18,10 @@ const register = async event => {
     password: password.value
   };
   try {
-    await axios.post(`/api/auth/register`, registerData).then(response => {
-      console.log(response);
-      userStore.user = response.data.user;
-      userStore.isLoggedIn = true;
-      localStorage.setItem('user', JSON.stringify(userStore.user));
-      isSuccess.value = true;
-    });
+    userStore.registerUser()
+    userStore.isLoggedIn = true;
+    isSuccess.value = true;
+    isError.value = false;
   } catch (error) {
     isError.value = true;
     console.log(error);

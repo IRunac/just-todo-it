@@ -1,4 +1,5 @@
 import express, { NextFunction, Request, Response } from 'express';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 import { DependecyInjection } from '../index';
 import { isAuthenticated } from '../helpers/auth_helpers';
 
@@ -22,10 +23,28 @@ export const userRoutesInit = (DI: DependecyInjection) => {
     next();
   });
 
+  // GET USER FROM JWT TOKEN
+  router.get('/me', async (req: Request, res: Response) => {
+    if (req.headers.authorization) {
+      const token = req.headers.authorization.split(' ')[1];
+      if (!token) return res.status(401).send('Invalid token');
+      jwt.verify(token, process.env.SECRET_KEY!, async (error, decoded) => {
+        if (error) return res.status(401).send('Invalid token');
+        if (decoded) {
+          const { username } = decoded as JwtPayload;
+          const user = await userRepository.findOne({ username }, { populate: ['todo_items', 'boards'] });
+          return res.status(200).send(user);
+        }
+      });
+    } else {
+      return res.status(401).send('Authorization header not found');
+    }
+  });
+
   // GET ALL
   router.get('/', async (req: Request, res: Response) => {
     const users = await userRepository.findAll();
-    res.status(200).send(users);
+    return res.status(200).send(users);
   });
 
   // GET BY ID
