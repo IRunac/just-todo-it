@@ -1,32 +1,24 @@
-<script>
-import axios from 'axios';
+<script setup>
+import { useUserStore } from "../store/user";
+import router from "../router"; 
+const userStore = useUserStore();
 
-export default {
-  name: 'Login',
-  data() {
-    return {
-      username: '',
-      password: '',
-      isError: false
-    }
-  },
-  methods: {
-    async login(event) {
-      event.preventDefault();
-      try {
-        const { username, password } = this;
-        await axios.post(`/api/auth/login`, { username, password }).then(response => {
-          console.log(response);
-          const { token } = response.data;
-          this.$router.push('/');
-        });
-      } catch (error) {
-        this.isError = true;
-        console.log(error);
-      }
-    }
+let isError = false;
+let username = '';
+let password = '';
+
+const login = async (event) => {
+  event.preventDefault();
+  try {
+    await userStore.login(username, password);
+    localStorage.setItem('user', JSON.stringify(userStore.user));
+    router.push('/');
+  } catch (error) {
+    isError = true;
+    console.log(error);
   }
 }
+
 </script>
 
 <template>

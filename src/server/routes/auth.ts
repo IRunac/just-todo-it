@@ -33,7 +33,7 @@ export const authRoutesInit = (DI: DependecyInjection) => {
     const isMatch = comparePassword(user, password);
     if (isMatch) {
       const token = jwt.sign(payload, process.env.SECRET_KEY as jwt.Secret);
-      return res.cookie('jwtToken', token).status(200).json({ token }).send();
+      return res.cookie('jwtToken', token).status(200).json({ user }).send();
     }
     return res.sendStatus(401);
   });
@@ -55,7 +55,7 @@ export const authRoutesInit = (DI: DependecyInjection) => {
     };
     await DI.userRepository.create(newUser);
     const token = jwt.sign(payload, process.env.SECRET_KEY as jwt.Secret);
-    return res.cookie('jwtToken', token).status(200).json({ token }).send();
+    return res.cookie('jwtToken', token).status(200).json({ user: newUser }).send();
   });
 
   return router;

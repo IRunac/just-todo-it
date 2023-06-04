@@ -15,7 +15,7 @@ export const userRoutesInit = (DI: DependecyInjection) => {
     const userId: number = parseInt(id);
     const user = await userRepository.findOne(
       { id: userId },
-      { populate: ['todo_items'] }
+      { populate: ['todo_items', 'boards'] }
     );
     if (!user) return res.status(404).send('User not found');
     req.body.user = user;

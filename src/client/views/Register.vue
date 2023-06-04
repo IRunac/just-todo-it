@@ -1,32 +1,35 @@
-<script>
+<script setup>
 import axios from 'axios';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useUserStore } from "../store/user";
 
-export default {
-  name: 'Register',
-  data() {
-    return {
-      username: '',
-      password: '',
-      isError: false
-    }
-  },
-  methods: {
-    async register(event) {
-      event.preventDefault();
-      try {
-        const { username, password } = this;
-        await axios.post(`/api/auth/register`, { username, password }).then(response => {
-          console.log(response);
-          const { token } = response.data;
-          this.$router.push('/');
-        });
-      } catch (error) {
-        this.isError = true;
-        console.log(error);
-      }
-    }
+const userStore = useUserStore();
+const router = useRouter(); 
+const username = ref('');
+const password = ref('');
+let isError = ref(false);
+let isSuccess = ref(false);
+
+const register = async event => {
+  event.preventDefault();
+  const registerData = {
+    username: username.value,
+    password: password.value
+  };
+  try {
+    await axios.post(`/api/auth/register`, registerData).then(response => {
+      console.log(response);
+      userStore.user = response.data.user;
+      userStore.isLoggedIn = true;
+      localStorage.setItem('user', JSON.stringify(userStore.user));
+      isSuccess.value = true;
+    });
+  } catch (error) {
+    isError.value = true;
+    console.log(error);
   }
-}
+};
 </script>
 
 <template>
@@ -38,7 +41,8 @@ export default {
     <input v-model="password" name="password">
     <button type="submit">Register</button>
   </form>
-  <div class="error" v-show="isError">User with that username already exists.</div>
+  <div v-if="isError" class="error">User with that username already exists.</div>
+  <div v-if="isSuccess" class="success">Thank you for registering.</div>
 </template>
 
 <style lang="scss">
@@ -60,6 +64,12 @@ export default {
 
   .error {
     color: #b00020;
+    margin: 0 auto;
+    width: fit-content;
+  }
+
+  .success {
+    color: green;
     margin: 0 auto;
     width: fit-content;
   }

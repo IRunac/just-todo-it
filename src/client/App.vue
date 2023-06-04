@@ -1,29 +1,28 @@
-<script>
+<script setup>
 import Cookies from 'js-cookie';
+import { useUserStore } from './store/user';
+import { useRouter } from 'vue-router';
+import { computed } from 'vue';
 
-export default {
-  name: 'Login',
-  data() {
-    return {
-      jwtToken: Cookies.get('jwtToken'),
-    }
-  },
-  methods: {
-    logout(event) {
-      event.preventDefault();
-      Cookies.remove('jwtToken');
-      this.$router.push('/login');
-    }
-  }
+const userStore = useUserStore();
+const router = useRouter();
+const isAdmin = computed(() => userStore.user?.role === 'admin');
+
+const logout = event => {
+  event.preventDefault();
+  Cookies.remove('jwtToken');
+  userStore.logoutUser();
+  router.push('/login');
 }
 </script>
 
 <template>
   <ul id="nav">
     <li><router-link to="/">Home</router-link></li>
+    <li v-if="isAdmin"><router-link to="/users">Users</router-link></li>
     <li><router-link to="/login">Login</router-link></li>
     <li><router-link to="/register">Sign Up</router-link></li>
-    <li v-if="jwtToken"><a @click="logout">Logout</a></li>
+    <li v-if="userStore.isLoggedIn"><a href="" @click="logout">Logout</a></li>
   </ul>
   <div class="router">
     <router-view/>
@@ -42,7 +41,7 @@ h3 {
   margin: 20px;
 }
 
-ul {
+ul#nav {
   margin: 0;
   padding: 0;
   border-bottom: 2px double teal;

@@ -49,6 +49,7 @@ export const todoItemRoutesInit = (DI: DependecyInjection) => {
       board
     } as TodoItem;
     await todoItemRepository.create(newTodoItem);
+    await entityManager.flush();
     res.sendStatus(201);
   });
 
