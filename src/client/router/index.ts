@@ -1,16 +1,19 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import axios from 'axios';
+import Boards from '../views/Boards.vue';
+import Categories from '../views/Categories.vue';
 import Cookies from 'js-cookie';
 import Home from '../views/Home.vue';
 import Login from '../views/Login.vue';
 import Register from '../views/Register.vue';
+import TodoItems from '../views/TodoItems.vue';
 import Users from '../views/Users.vue';
 import { useUserStore } from '../store/user';
 
 const routes = [
   {
     path: '/',
-    name: 'Home',
+    name: 'home',
     component: Home,
     meta: {
       requiresAuth: true
@@ -18,17 +21,17 @@ const routes = [
   },
   {
     path: '/login',
-    name: 'Login',
+    name: 'login',
     component: Login
   },
   {
     path: '/register',
-    name: 'Register',
+    name: 'register',
     component: Register
   },
   {
     path: '/users',
-    name: 'Users',
+    name: 'users',
     component: Users,
     beforeEnter: (to, from) => {
       const userStore = useUserStore();
@@ -37,6 +40,21 @@ const routes = [
     meta: {
       requiresAuth: true
     }
+  },
+  {
+    path: '/boards',
+    name: 'boards',
+    component: Boards
+  },
+  {
+    path: '/categories',
+    name: 'categories',
+    component: Categories
+  },
+  {
+    path: '/todoItems',
+    name: 'todoItems',
+    component: TodoItems
   }
 ];
 

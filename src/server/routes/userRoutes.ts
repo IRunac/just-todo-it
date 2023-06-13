@@ -1,10 +1,12 @@
 import express, { NextFunction, Request, Response } from 'express';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import crypto from 'crypto';
 import { DependecyInjection } from '../index';
 import { isAuthenticated } from '../helpers/auth_helpers';
 
 export const userRoutesInit = (DI: DependecyInjection) => {
   const userRepository = DI.userRepository;
+  const todoItemRepository = DI.todoItemRepository;
   const entityManager = DI.em;
   const router = express.Router();
 
@@ -52,15 +54,41 @@ export const userRoutesInit = (DI: DependecyInjection) => {
     return res.status(200).send(req.body.user);
   });
 
+  // GET BOARDS FOR USER
+  router.get('/:id/boards', isAuthenticated(DI.passport), async (req: Request, res: Response) => {
+    const user = req.body.user;
+    const boards = user.boards;
+    if (!boards) return res.status(404).send('Boards not found for this user');
+    return res.status(200).send(user.boards);
+  });
+
+  // GET CATEGORIES FOR USER
+  router.get('/:id/categories', isAuthenticated(DI.passport), async (req: Request, res: Response) => {
+    const user = req.body.user;
+    userRepository.populate(user, ['categories']);
+    const categories = user.categories;
+    if (!categories) return res.status(404).send('Categories not found for this user');
+    return res.status(200).send(user.categories);
+  });
+
+  // GET TODO ITEMS FOR USER
+  router.get('/:id/todoItems', isAuthenticated(DI.passport), async (req: Request, res: Response) => {
+    const todoItems = req.body.user.todo_items;
+    todoItemRepository.populate(todoItems, ['categories']);
+    if (!todoItems) return res.status(404).send('Todo Items not found for this user');
+    return res.status(200).send(todoItems);
+  });
+
   // POST
   router.post('/', async (req: Request, res: Response) => {
-    const newUser = { ...req.body };
-    await userRepository.create(newUser);
-    res.sendStatus(201);
+    const salt = crypto.randomBytes(16).toString('hex');
+    const userData = { ...req.body, salt };
+    const newUser = await userRepository.create(userData);
+    res.status(201).send(newUser);
   });
 
   // DELETE
-  router.delete('/:id', async (req: Request, res: Response) => {
+  router.delete('/:id', isAuthenticated(DI.passport), async (req: Request, res: Response) => {
     await entityManager.removeAndFlush(req.body.user!);
     return res.sendStatus(204);
   });

@@ -1,9 +1,10 @@
 <script setup>
+import { ref } from 'vue';
 import { useUserStore } from "../store/user";
 import router from "../router"; 
 const userStore = useUserStore();
 
-let isError = false;
+const isError = ref(false);
 let username = '';
 let password = '';
 
@@ -13,7 +14,7 @@ const login = async (event) => {
     await userStore.loginUser(username, password);
     router.push('/');
   } catch (error) {
-    isError = true;
+    isError.value = true;
     console.log(error);
   }
 }
@@ -22,40 +23,21 @@ const login = async (event) => {
 
 <template>
   <h3>Login</h3>
-  <form @submit="login" class="form">
-    <label for="username">Username</label>
-    <input v-model="username" name="username">
-    <label for="password">Password</label>
-    <input v-model="password" name="password">
-    <button type="submit">Login</button>
-  </form>
-  <div class="error" v-show="isError">Invalid username or password.</div>
+  <v-container>
+    <v-row justify="center">
+      <v-col cols="3">
+        <v-form @submit="login" class="d-flex flex-column w-20">
+          <label for="username">Username</label>
+          <input v-model="username" name="username">
+          <label for="password">Password</label>
+          <input v-model="password" name="password">
+          <v-btn type="submit" class="d-block">Login</v-btn>
+        </v-form>
+        <div class="error" v-show="isError">Invalid username or password.</div>
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <style lang="scss">
-  .form {
-    margin: 0 auto;
-    width: fit-content;
-  }
-
-  label {
-    display: block;
-    margin: 0 auto;
-  }
-
-  button {
-    display: block;
-    margin: 20px auto;
-    padding: 3px 10px;
-  }
-
-  .error {
-    color: #b00020;
-    margin: 0 auto;
-    width: fit-content;
-  }
-
-  input {
-    background: #E4C988;
-  }
 </style>

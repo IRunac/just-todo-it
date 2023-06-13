@@ -1,38 +1,53 @@
 <script setup>
-import axios from 'axios';
-import Cookies from 'js-cookie';
 import { useUserStore } from "../store/user";
-import { onMounted } from 'vue'
+import { computed, ref } from 'vue';
+
+const BoardTypes = {
+  DAILY: 'daily',
+  WEEKLY: 'weekly',
+  MONTHLY: 'monthly',
+  YEARLY: 'yearly'
+}
 
 const userStore = useUserStore();
+const itemsPerBoardType = ref({});
 
-// hardcoded user
-let todoItems = [];
-
-onMounted(async () => {
-  if (userStore.isLoggedIn) {
-    const token = Cookies.get('jwtToken');
-    await axios.get(`/api/users/${userStore.user.id}`, { headers: {"Authorization" : `Bearer ${token}`} }).then(response => {
-      todoItems = response.data['todo_items'];
-    });
-  }
-});
+for (const board of userStore.user.boards) {
+  itemsPerBoardType.value[board.type] = userStore.user.todo_items.filter(item => item.board === board.id);
+}
 </script>
 
 <template>
   <h3>Hello {{ userStore.user?.username || '' }}</h3>
-  <ul class="boards">
-    <li v-for="board in userStore.user?.boards">
-      {{ board.type }}
-      <ul class="todo-items">
-        <div v-for="item in userStore.user?.todo_items">
-          <li v-if="item.board === board.id">
-            {{ item.name }} - Status:
-            {{ item.status }}
-          </li>
-        </div>
-      </ul>
-      <br>
-    </li>
-  </ul>
+
+  <v-table theme="dark" density="compact">
+    <thead>
+      <tr>
+        <th></th>
+        <th>TODO</th>
+        <th>IN PROGRESS</th>
+        <th>DONE</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr v-for="board in userStore.user.boards" :key="board.id">
+        <td>{{ board.type }}</td>
+        <td>
+          <div v-for="item in itemsPerBoardType[board.type]" :key="item.id">
+            <span v-if="item.status === 'todo'">{{ item.name }}</span>
+          </div>
+        </td>
+        <td>
+          <div v-for="item in itemsPerBoardType[board.type]" :key="item.id">
+            <span v-if="item.status === 'in-progress'">{{ item.name }}</span>
+          </div>
+        </td>
+        <td>
+          <div v-for="item in itemsPerBoardType[board.type]" :key="item.id">
+            <span v-if="item.status === 'done'">{{ item.name }}</span>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </v-table>
 </template>

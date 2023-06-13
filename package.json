@@ -38,8 +38,10 @@
     "pg": "^8.10.0",
     "pinia": "^2.1.3",
     "ts-node": "^10.9.1",
+    "vite-plugin-vuetify": "^1.0.2",
     "vue": "^3.2.36",
-    "vue-router": "^4.2.1"
+    "vue-router": "^4.2.1",
+    "vuetify": "^3.3.2"
   },
   "devDependencies": {
     "@extensionengine/eslint-config": "^3.0.1",
