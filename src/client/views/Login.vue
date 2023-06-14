@@ -27,10 +27,8 @@ const login = async (event) => {
     <v-row justify="center">
       <v-col cols="3">
         <v-form @submit="login" class="d-flex flex-column w-20">
-          <label for="username">Username</label>
-          <input v-model="username" name="username">
-          <label for="password">Password</label>
-          <input v-model="password" name="password">
+          <v-text-field v-model="username" label="Username" outlined/>
+          <v-text-field v-model="password" label="Password" outlined/>
           <v-btn type="submit" class="d-block">Login</v-btn>
         </v-form>
         <div class="error" v-show="isError">Invalid username or password.</div>

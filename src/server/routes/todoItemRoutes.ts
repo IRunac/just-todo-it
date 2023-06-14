@@ -4,6 +4,7 @@ import { TodoItem } from '../entities/TodoItem';
 
 export const todoItemRoutesInit = (DI: DependecyInjection) => {
   const todoItemRepository = DI.todoItemRepository;
+  const categoryRepository = DI.categoryRepository;
   const userRepository = DI.userRepository;
   const boardRepository = DI.boardRepository;
   const entityManager = DI.em;
@@ -13,7 +14,7 @@ export const todoItemRoutesInit = (DI: DependecyInjection) => {
     const todoItemId: number = parseInt(id);
     const todoItem = await todoItemRepository.findOne({ id: todoItemId });
     if (!todoItem) return res.status(404).send('Todo Item not found');
-    req.body.todoItem = todoItem;
+    req.todoItem = todoItem;
     next();
   });
 
@@ -25,7 +26,7 @@ export const todoItemRoutesInit = (DI: DependecyInjection) => {
 
   // GET BY ID
   router.get('/:id', async (req: Request, res: Response) => {
-    return res.status(200).send(req.body.todoItem);
+    return res.status(200).send(req.todoItem);
   });
 
   // POST
@@ -36,8 +37,10 @@ export const todoItemRoutesInit = (DI: DependecyInjection) => {
       completed_increment: completedIncrement,
       failed_increment: failedIncrement,
       user_id: userId,
-      board_id: boardId
+      board_id: boardId,
+      category_id: categoryId
     } = req.body;
+    const category = await categoryRepository.findOne({ id: categoryId });
     const user = await userRepository.findOne({ id: userId });
     const board = await boardRepository.findOne({ id: boardId });
     const newTodoItem = {
@@ -48,14 +51,20 @@ export const todoItemRoutesInit = (DI: DependecyInjection) => {
       user,
       board
     } as TodoItem;
-    await todoItemRepository.create(newTodoItem);
+    const todoItem = await todoItemRepository.create(newTodoItem);
+    if (category) {
+      todoItem.categories.add(category);
+      category.todo_items.add(todoItem);
+    }
     await entityManager.flush();
     res.sendStatus(201);
   });
 
   // DELETE
   router.delete('/:id', async (req: Request, res: Response) => {
-    await entityManager.removeAndFlush(req.body.todoItem);
+    const todoItem = req.todoItem;
+    if (!todoItem) return res.status(404).send('Todo Item not found');
+    await entityManager.removeAndFlush(todoItem);
     return res.sendStatus(204);
   });
 

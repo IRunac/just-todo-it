@@ -39,9 +39,9 @@ const deleteItem = async (item) => {
       <tr v-for="item in todoItems" :key="item.id">
         <td>{{ item.name }}</td>
         <td>{{ item.status }}</td>
-        <td>{{ item.category }}</td>
+        <td>{{ item.categories[0]?.name }}</td>
         <td>{{ item.createdAt}}</td>
-        <td><v-btn theme="light" @click="deleteItem(item)">Delete</v-btn></td>
+        <td><v-btn theme="light" @click="deleteItem(item)" class="ma-4">Delete</v-btn></td>
       </tr>
     </tbody>
   </v-table>

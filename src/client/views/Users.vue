@@ -41,12 +41,7 @@ const openUserForm = async () => {
 const createUser = async (event) => {
   event.preventDefault();
   const token = Cookies.get('jwtToken');
-  try {
-    const response = await axios.post(`/api/users`, { ...userForm }, { headers: {"Authorization" : `Bearer ${token}`} });
-  } catch (error) {
-    console.log(error);
-  }
-  console.log(response);
+  const response = await axios.post(`/api/users`, { ...userForm }, { headers: {"Authorization" : `Bearer ${token}`} });
   users.value.push(response.data);
 };
 </script>
@@ -67,13 +62,13 @@ const createUser = async (event) => {
         <td>{{ user.role}}</td>
         <td>{{ user.createdAt}}</td>
         <td>
-          <v-btn theme="light" class="mr-5" @click="deleteUser(user)">Delete</v-btn>
+          <v-btn theme="light" class="ma-4" @click="deleteUser(user)">Delete</v-btn>
         </td>
       </tr>
     </tbody>
   </v-table>
 
-  <v-btn theme="light" class="mr-5" @click="openUserForm">Create User</v-btn>
+  <v-btn theme="light" class="mt-5" @click="openUserForm">Create User</v-btn>
   <v-container>
     <v-row>
       <v-col cols="4">

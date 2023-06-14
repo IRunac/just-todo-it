@@ -10,7 +10,6 @@ const boards = ref([])
 onMounted(async() => {
   const token = Cookies.get('jwtToken');
   const userId = userStore.user.id;
-  console.log(userId);
   await axios.get(`/api/users/${userId}/boards`, { headers: {"Authorization" : `Bearer ${token}`} }).then(response => {
     boards.value = response.data;
   });
@@ -38,7 +37,7 @@ const deleteBoard = async (board) => {
       <tr v-for="board in boards" :key="board.id">
         <td>{{ board.type }}</td>
         <td>{{ board.createdAt}}</td>
-        <td><v-btn theme="light" @click="deleteBoard(board)">Delete</v-btn></td>
+        <td><v-btn theme="light" @click="deleteBoard(board)" class="ma-4">Delete</v-btn></td>
       </tr>
     </tbody>
   </v-table>

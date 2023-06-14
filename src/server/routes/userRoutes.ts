@@ -6,22 +6,17 @@ import { isAuthenticated } from '../helpers/auth_helpers';
 
 export const userRoutesInit = (DI: DependecyInjection) => {
   const userRepository = DI.userRepository;
-  const todoItemRepository = DI.todoItemRepository;
   const entityManager = DI.em;
   const router = express.Router();
-
-  // interface UserRequest extends Request {
-  //   user?: User;
-  // }
 
   router.param('id', async (req: Request, res: Response, next: NextFunction, id: string) => {
     const userId: number = parseInt(id);
     const user = await userRepository.findOne(
       { id: userId },
-      { populate: ['todo_items', 'boards'] }
+      { populate: ['todo_items.categories', 'boards'] }
     );
     if (!user) return res.status(404).send('User not found');
-    req.body.user = user;
+    req.user = user;
     next();
   });
 
@@ -51,12 +46,13 @@ export const userRoutesInit = (DI: DependecyInjection) => {
 
   // GET BY ID
   router.get('/:id', isAuthenticated(DI.passport), async (req: Request, res: Response) => {
-    return res.status(200).send(req.body.user);
+    return res.status(200).send(req.user);
   });
 
   // GET BOARDS FOR USER
   router.get('/:id/boards', isAuthenticated(DI.passport), async (req: Request, res: Response) => {
-    const user = req.body.user;
+    const user = req.user;
+    if (!user) return res.status(404).send('User not found');
     const boards = user.boards;
     if (!boards) return res.status(404).send('Boards not found for this user');
     return res.status(200).send(user.boards);
@@ -64,7 +60,8 @@ export const userRoutesInit = (DI: DependecyInjection) => {
 
   // GET CATEGORIES FOR USER
   router.get('/:id/categories', isAuthenticated(DI.passport), async (req: Request, res: Response) => {
-    const user = req.body.user;
+    const user = req.user;
+    if (!user) return res.status(404).send('User not found');
     userRepository.populate(user, ['categories']);
     const categories = user.categories;
     if (!categories) return res.status(404).send('Categories not found for this user');
@@ -73,8 +70,7 @@ export const userRoutesInit = (DI: DependecyInjection) => {
 
   // GET TODO ITEMS FOR USER
   router.get('/:id/todoItems', isAuthenticated(DI.passport), async (req: Request, res: Response) => {
-    const todoItems = req.body.user.todo_items;
-    todoItemRepository.populate(todoItems, ['categories']);
+    const todoItems = req.user?.todo_items;
     if (!todoItems) return res.status(404).send('Todo Items not found for this user');
     return res.status(200).send(todoItems);
   });
@@ -89,14 +85,14 @@ export const userRoutesInit = (DI: DependecyInjection) => {
 
   // DELETE
   router.delete('/:id', isAuthenticated(DI.passport), async (req: Request, res: Response) => {
-    await entityManager.removeAndFlush(req.body.user!);
+    await entityManager.removeAndFlush(req.user!);
     return res.sendStatus(204);
   });
 
   // PATCH
   router.patch('/:id', async (req: Request, res: Response) => {
     const { username, role } = req.body;
-    const user = req.body.user!;
+    const user = req.user!;
     user.username = username || user.username;
     user.role = role || user.role;
     await entityManager.persistAndFlush(user);

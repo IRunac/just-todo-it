@@ -7,11 +7,10 @@ const isAdmin = computed(() => userStore.user?.role === 'admin');
 </script>
 
 <template>
-  <v-navigation-drawer 
+  <v-navigation-drawer
     app
     class="bg-deep-gray"
-    theme="dark"
-    permanent>
+    theme="dark">
     <v-list>
       <v-list-item
         title="Dashboard"

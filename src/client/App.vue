@@ -3,9 +3,7 @@ import NavigationBar from './components/NavigationBar.vue'
 import SideBar from './components/SideBar.vue'
 import Footer from './components/Footer.vue'
 </script>
-<!-- 
-  kad kreiram usera, jel ga vratim nazad
- -->
+
 <template>
   <v-app>
     <NavigationBar/>

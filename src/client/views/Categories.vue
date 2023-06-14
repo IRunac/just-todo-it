@@ -41,7 +41,7 @@ const deleteCategory = async (category) => {
         <td>{{ category.value }}</td>
         <td>{{ category.max_value }}</td>
         <td>{{ category.createdAt}}</td>
-        <td><v-btn theme="light" @click="deleteCategory(category)">Delete</v-btn></td>
+        <td><v-btn theme="light" @click="deleteCategory(category)" class="ma-4">Delete</v-btn></td>
       </tr>
     </tbody>
   </v-table>

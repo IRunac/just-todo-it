@@ -13,7 +13,6 @@ export const useUserStore = defineStore('user', {
     },
     async loginUser(username, password) {
       const response = await login(username, password);
-      console.log(response);
       this.user = response;
       this.isLoggedIn = true;
     },

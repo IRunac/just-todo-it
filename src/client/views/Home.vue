@@ -43,6 +43,7 @@ for (const board of userStore.user.boards) {
           </div>
         </td>
         <td>
+          <!-- slozit bolju strukturu da izbjegnemo v-for-ova puno -->
           <div v-for="item in itemsPerBoardType[board.type]" :key="item.id">
             <span v-if="item.status === 'done'">{{ item.name }}</span>
           </div>

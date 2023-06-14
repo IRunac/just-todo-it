@@ -12,7 +12,7 @@ export const boardRoutesInit = (DI: DependecyInjection) => {
     const boardId: number = parseInt(id);
     const board = await boardRepository.findOne({ id: boardId });
     if (!board) return res.status(404).send('Board not found');
-    req.body.board = board;
+    req.board = board;
     next();
   });
 
@@ -24,7 +24,7 @@ export const boardRoutesInit = (DI: DependecyInjection) => {
 
   // GET BY ID
   router.get('/:id', async (req: Request, res: Response) => {
-    return res.status(200).send(req.body.board);
+    return res.status(200).send(req.board);
   });
 
   // POST
@@ -38,7 +38,9 @@ export const boardRoutesInit = (DI: DependecyInjection) => {
 
   // DELETE
   router.delete('/:id', async (req: Request, res: Response) => {
-    await entityManager.removeAndFlush(req.body.board);
+    const board = req.board;
+    if (!board) return res.status(404).send('Board not found');
+    await entityManager.removeAndFlush(board);
     return res.sendStatus(204);
   });
 

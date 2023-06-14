@@ -44,17 +44,26 @@ const routes = [
   {
     path: '/boards',
     name: 'boards',
-    component: Boards
+    component: Boards,
+    meta: {
+      requiresAuth: true
+    }
   },
   {
     path: '/categories',
     name: 'categories',
-    component: Categories
+    component: Categories,
+    meta: {
+      requiresAuth: true
+    }
   },
   {
     path: '/todoItems',
     name: 'todoItems',
-    component: TodoItems
+    component: TodoItems,
+    meta: {
+      requiresAuth: true
+    }
   }
 ];
 
@@ -67,6 +76,7 @@ let isInitialized = false;
 
 router.beforeEach(async (to, from) => {
   const userStore = useUserStore();
+  // get current user from token, only do this once on page load
   if (!isInitialized) {
     const token = Cookies.get('jwtToken');
     if (token) {
