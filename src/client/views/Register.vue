@@ -42,8 +42,8 @@ const register = async event => {
       </v-col>
     </v-row>
   </v-container>
-  <div v-if="isError" class="error">User with that username already exists.</div>
-  <div v-if="isSuccess" class="success">Thank you for registering.</div>
+  <div v-show="isError" class="error">User with that username already exists.</div>
+  <div v-show="isSuccess" class="success">Thank you for registering.</div>
 </template>
 
 <style lang="scss">

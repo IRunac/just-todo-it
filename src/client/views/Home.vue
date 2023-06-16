@@ -1,52 +1,46 @@
 <script setup>
 import { useUserStore } from "../store/user";
-import { computed, ref } from 'vue';
+import { computed, reactive } from 'vue';
 
-const BoardTypes = {
-  DAILY: 'daily',
-  WEEKLY: 'weekly',
-  MONTHLY: 'monthly',
-  YEARLY: 'yearly'
+const ITEM_STATUS = {
+  TODO: 'todo',
+  IN_PROGRESS: 'in_progress',
+  DONE: 'done',
 }
-
 const userStore = useUserStore();
-const itemsPerBoardType = ref({});
 
-for (const board of userStore.user.boards) {
-  itemsPerBoardType.value[board.type] = userStore.user.todo_items.filter(item => item.board === board.id);
-}
+const sortedItems = computed(() => {
+  const itemsPerBoardAndStatus = {}
+  for (const board of userStore.user.boards) {
+    const itemsPerBoard = userStore.user.todo_items.filter(item => item.board === board.id);
+    itemsPerBoardAndStatus[board.type] = {};
+    for (const item_status of Object.values(ITEM_STATUS)) {
+      itemsPerBoardAndStatus[board.type][item_status] = itemsPerBoard.filter(item => item.status === item_status);
+    }
+  }
+  return itemsPerBoardAndStatus;
+});
+
 </script>
 
 <template>
   <h3>Hello {{ userStore.user?.username || '' }}</h3>
-
   <v-table theme="dark" density="compact">
     <thead>
       <tr>
         <th></th>
-        <th>TODO</th>
-        <th>IN PROGRESS</th>
-        <th>DONE</th>
+        <th v-for="status in Object.values(ITEM_STATUS)">{{ status }}</th>
       </tr>
     </thead>
     <tbody>
-      <tr v-for="board in userStore.user.boards" :key="board.id">
-        <td>{{ board.type }}</td>
-        <td>
-          <div v-for="item in itemsPerBoardType[board.type]" :key="item.id">
-            <span v-if="item.status === 'todo'">{{ item.name }}</span>
-          </div>
-        </td>
-        <td>
-          <div v-for="item in itemsPerBoardType[board.type]" :key="item.id">
-            <span v-if="item.status === 'in-progress'">{{ item.name }}</span>
-          </div>
-        </td>
-        <td>
-          <!-- slozit bolju strukturu da izbjegnemo v-for-ova puno -->
-          <div v-for="item in itemsPerBoardType[board.type]" :key="item.id">
-            <span v-if="item.status === 'done'">{{ item.name }}</span>
-          </div>
+      <tr v-for="(boardItems, boardType) in sortedItems" :key="boardType">
+        <td>{{ boardType }}</td>
+        <td v-for="(statusItems, status) in boardItems" :key="status">
+          <v-row>
+            <v-col v-for="item in statusItems" :key="item.id" class="border pa-0 pl-1 ma-3">
+              {{ item.name }}
+            </v-col>
+          </v-row>
         </td>
       </tr>
     </tbody>

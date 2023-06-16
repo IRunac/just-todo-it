@@ -1,6 +1,7 @@
-import express, { Request, Response } from 'express';
+import { Request, Response } from 'express-serve-static-core';
 import { Category } from '../entities';
 import { DependecyInjection } from '../index';
+import express from 'express';
 
 export const categoryRoutesInit = (DI: DependecyInjection) => {
   const categoryRepository = DI.categoryRepository;

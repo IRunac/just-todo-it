@@ -5,13 +5,13 @@ import router from "../router";
 const userStore = useUserStore();
 
 const isError = ref(false);
-let username = '';
-let password = '';
+const username = ref('');
+const password = ref('');
 
 const login = async (event) => {
   event.preventDefault();
   try {
-    await userStore.loginUser(username, password);
+    await userStore.loginUser(username.value, password.value);
     router.push('/');
   } catch (error) {
     isError.value = true;

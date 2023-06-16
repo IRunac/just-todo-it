@@ -72,7 +72,7 @@ const createUser = async (event) => {
   <v-container>
     <v-row>
       <v-col cols="4">
-        <v-form v-if="showCreateUserForm" @submit="createUser" ref="userFormElem">
+        <v-form v-show="showCreateUserForm" @submit="createUser" ref="userFormElem">
           <v-text-field v-model="userForm.username" label="Username" outlined/>
           <v-text-field v-model="userForm.password" label="Password" outlined/>
           <v-select v-model="userForm.role" :items="roleValues" label="Select user role"/>
