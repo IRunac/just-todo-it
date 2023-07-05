@@ -1,6 +1,6 @@
 <script setup>
 import { useUserStore } from "../store/user";
-import { computed, reactive } from 'vue';
+import { computed } from 'vue';
 
 const ITEM_STATUS = {
   TODO: 'todo',
@@ -20,7 +20,6 @@ const sortedItems = computed(() => {
   }
   return itemsPerBoardAndStatus;
 });
-
 </script>
 
 <template>
@@ -32,7 +31,7 @@ const sortedItems = computed(() => {
         <th v-for="status in Object.values(ITEM_STATUS)">{{ status }}</th>
       </tr>
     </thead>
-    <tbody>
+    <tbody> 
       <tr v-for="(boardItems, boardType) in sortedItems" :key="boardType">
         <td>{{ boardType }}</td>
         <td v-for="(statusItems, status) in boardItems" :key="status">

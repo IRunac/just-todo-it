@@ -11,7 +11,7 @@ export const authRoutesInit = (DI: DependecyInjection) => {
 
   const secretKey = process.env.SECRET_KEY as jwt.Secret;
   const jwtOptions = {
-    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    jwtFromRequest: ExtractJwt.fromExtractors([req => req.cookies.jwtToken]),
     secretOrKey: secretKey
   } as StrategyOptions;
 

@@ -22,12 +22,4 @@ export class Category extends BaseEntity {
 
   @ManyToMany(() => TodoItem, 'categories', { owner: true, cascade: [Cascade.ALL] })
     todo_items = new Collection<TodoItem>(this);
-
-  // constructor(name: string, color: string, value: number, max_value: number) {
-  //     super()
-  //     this.name = name;
-  //     this.color = color;
-  //     this.value = value;
-  //     this.max_value = max_value;
-  // }
 }

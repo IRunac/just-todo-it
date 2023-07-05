@@ -19,7 +19,8 @@ export const categoryRoutesInit = (DI: DependecyInjection) => {
       { populate: isTodoItemRoute ? ['todo_items'] : [] }
     );
     if (!category) return res.status(404).send('Category not found');
-    req.category = category;
+    req.context = {};
+    req.context.category = category;
     next();
   });
 
@@ -32,7 +33,7 @@ export const categoryRoutesInit = (DI: DependecyInjection) => {
   });
 
   router.use('/:id/todoItems', (req: Request, res: Response, next) => {
-    const category = req.category;
+    const category = req.context.category;
     if (!category) return res.send(404).send('Category not found');
     req.body.todoItems = category.todo_items.getItems();
     next();
@@ -46,7 +47,7 @@ export const categoryRoutesInit = (DI: DependecyInjection) => {
 
   // GET BY ID
   router.get('/:id', async (req: Request, res: Response) => {
-    res.status(200).send(req.category);
+    res.status(200).send(req.context.category);
   });
 
   // POST
@@ -54,13 +55,14 @@ export const categoryRoutesInit = (DI: DependecyInjection) => {
     const { name, color, value, user_id: userId } = req.body;
     const user = await userRepository.findOne({ id: userId });
     const categoryData = { name, user, color, value } as Category;
-    const newCategory = await categoryRepository.create(categoryData);
+    const newCategory = await entityManager.create(Category, categoryData);
+    await entityManager.persistAndFlush(newCategory);
     res.status(201).send(newCategory);
   });
 
   // DELETE
   router.delete('/:id', async (req: Request, res: Response) => {
-    const category = req.category;
+    const category = req.context.category;
     if (!category) return res.send(404).send('Category not found');
     await entityManager.removeAndFlush(category);
     res.sendStatus(204);
@@ -89,7 +91,7 @@ export const categoryRoutesInit = (DI: DependecyInjection) => {
   router.post('/:id/todoItems', async (req: Request, res: Response) => {
     const { todo_item_id: todoItemId } = req.body;
     const todoItem = await todoItemRepository.findOne({ id: todoItemId });
-    const category = req.category;
+    const category = req.context.category;
     if (!todoItem) return res.status(404).send('Todo Item not found');
     if (!category) return res.send(404).send('Category not found');
     category.todo_items.add(todoItem);
@@ -98,7 +100,7 @@ export const categoryRoutesInit = (DI: DependecyInjection) => {
 
   // DELETE
   router.delete('/:id/todoItems/:itemId', async (req: Request, res: Response) => {
-    const category = req.category;
+    const category = req.context.category;
     if (!category) return res.send(404).send('Category not found');
     category.todo_items.remove(req.body.todoItem);
     return res.sendStatus(204);
@@ -108,7 +110,7 @@ export const categoryRoutesInit = (DI: DependecyInjection) => {
   router.patch('/:id/todoItems/:itemId', async (req: Request, res: Response) => {
     const { todo_item_id: newTodoItemId } = req.body;
     const newTodoItem = await todoItemRepository.findOne({ id: newTodoItemId });
-    const category = req.category;
+    const category = req.context.category;
     if (!category) return res.send(404).send('Category not found');
     if (!newTodoItem) return res.status(404).send('Todo Item not found');
     category.todo_items.remove(req.body.todoItem);

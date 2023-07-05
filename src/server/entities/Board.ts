@@ -20,9 +20,4 @@ export class Board extends BaseEntity {
 
   @OneToMany(() => TodoItem, todoItem => todoItem.board)
     todo_items = new Collection<TodoItem>(this);
-
-  // constructor(type: BoardType) {
-  //     super()
-  //     this.type = type;
-  // }
 }

@@ -12,7 +12,8 @@ export const boardRoutesInit = (DI: DependecyInjection) => {
     const boardId: number = parseInt(id);
     const board = await boardRepository.findOne({ id: boardId });
     if (!board) return res.status(404).send('Board not found');
-    req.board = board;
+    req.context = {};
+    req.context.board = board;
     next();
   });
 
@@ -24,21 +25,22 @@ export const boardRoutesInit = (DI: DependecyInjection) => {
 
   // GET BY ID
   router.get('/:id', async (req: Request, res: Response) => {
-    return res.status(200).send(req.board);
+    return res.status(200).send(req.context.board);
   });
 
   // POST
   router.post('/', async (req: Request, res: Response) => {
     const { type, user_id: userId } = req.body;
     const user = await userRepository.findOneOrFail({ id: userId });
-    const newBoard = { type, user } as Board;
-    await boardRepository.create(newBoard);
-    res.sendStatus(201);
+    const boardData = { type, user } as Board;
+    const newBoard = entityManager.create(Board, boardData);
+    await entityManager.persistAndFlush(newBoard);
+    res.status(201).send(newBoard);
   });
 
   // DELETE
   router.delete('/:id', async (req: Request, res: Response) => {
-    const board = req.board;
+    const board = req.context.board;
     if (!board) return res.status(404).send('Board not found');
     await entityManager.removeAndFlush(board);
     return res.sendStatus(204);

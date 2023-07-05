@@ -31,10 +31,4 @@ export class User extends BaseEntity {
 
   @OneToMany(() => TodoItem, todoItem => todoItem.user, { cascade: [Cascade.ALL] })
     todo_items = new Collection<TodoItem>(this);
-
-  // constructor(username: string, role: UserRole) {
-  //     super()
-  //     this.username = username;
-  //     this.role = role;
-  // }
 }

@@ -7,6 +7,7 @@ import { authRoutesInit } from './routes/auth';
 import { boardRoutesInit } from './routes/boardRoutes';
 import bodyParser from 'body-parser';
 import { categoryRoutesInit } from './routes/categoryRoutes';
+import cookieParser from 'cookie-parser';
 import ormOptions from './mikro-orm.config';
 import { todoItemRoutesInit } from './routes/todoItemRoutes';
 import { userRoutesInit } from './routes/userRoutes';
@@ -38,6 +39,7 @@ MikroORM.init(ormOptions)
     app.use(passport.initialize());
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: false }));
+    app.use(cookieParser());
 
     app.use('/auth', authRoutesInit(DI));
     app.use('/users', userRoutesInit(DI));

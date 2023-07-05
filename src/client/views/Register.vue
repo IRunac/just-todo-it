@@ -1,25 +1,16 @@
 <script setup>
-import axios from 'axios';
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
 import { useUserStore } from "../store/user";
 
 const userStore = useUserStore();
-const router = useRouter(); 
 const username = ref('');
 const password = ref('');
 let isError = ref(false);
 let isSuccess = ref(false);
 
-const register = async event => {
-  event.preventDefault();
-  const registerData = {
-    username: username.value,
-    password: password.value
-  };
+const register = async () => {
   try {
-    userStore.registerUser()
-    userStore.isLoggedIn = true;
+    userStore.registerUser(username.value, password.value)
     isSuccess.value = true;
     isError.value = false;
   } catch (error) {
@@ -34,7 +25,7 @@ const register = async event => {
   <v-container>
     <v-row justify="center">
       <v-col cols="3">
-        <v-form @submit="register" class="d-flex flex-column w-20">
+        <v-form @submit.prevent="register" class="d-flex flex-column w-20">
           <v-text-field v-model="username" label="Username" outlined/>
           <v-text-field v-model="password" label="Password" outlined/>
           <v-btn type="submit">Register</v-btn>

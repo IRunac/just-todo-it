@@ -1,10 +1,9 @@
-import { login, register } from '../api';
+import { getCurrentUser, login, register } from '../api';
 import { defineStore } from 'pinia';
 
 export const useUserStore = defineStore('user', {
   state: () => ({
-    user: null,
-    isLoggedIn: false
+    user: null
   }),
 
   actions: {
@@ -12,13 +11,13 @@ export const useUserStore = defineStore('user', {
       this.user.value = await register(email, password);
     },
     async loginUser(username, password) {
-      const response = await login(username, password);
-      this.user = response;
-      this.isLoggedIn = true;
+      this.user = await login(username, password);
     },
     async logoutUser() {
-      this.isLoggedIn = false;
       this.user = null;
+    },
+    async init() {
+      this.user = await getCurrentUser();
     }
   }
 });

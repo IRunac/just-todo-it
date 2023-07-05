@@ -1,6 +1,8 @@
 import express, { Request, Response } from 'express';
+import { Category } from '../entities/Category';
 import { DependecyInjection } from '../index';
 import { TodoItem } from '../entities/TodoItem';
+import { IntegerType } from '@mikro-orm/core';
 
 export const todoItemRoutesInit = (DI: DependecyInjection) => {
   const todoItemRepository = DI.todoItemRepository;
@@ -14,7 +16,8 @@ export const todoItemRoutesInit = (DI: DependecyInjection) => {
     const todoItemId: number = parseInt(id);
     const todoItem = await todoItemRepository.findOne({ id: todoItemId });
     if (!todoItem) return res.status(404).send('Todo Item not found');
-    req.todoItem = todoItem;
+    req.context = {};
+    req.context.todoItem = todoItem;
     next();
   });
 
@@ -26,7 +29,7 @@ export const todoItemRoutesInit = (DI: DependecyInjection) => {
 
   // GET BY ID
   router.get('/:id', async (req: Request, res: Response) => {
-    return res.status(200).send(req.todoItem);
+    return res.status(200).send(req.context.todoItem);
   });
 
   // POST
@@ -38,9 +41,16 @@ export const todoItemRoutesInit = (DI: DependecyInjection) => {
       failed_increment: failedIncrement,
       user_id: userId,
       board_id: boardId,
-      category_id: categoryId
+      category_id: categoryIds
     } = req.body;
-    const category = await categoryRepository.findOne({ id: categoryId });
+
+    // const category = await categoryRepository.findOne({ id: categoryIds });
+
+    const categories = [];
+    for (const id of categoryIds) {
+      categories.push(entityManager.getReference(Category, id));
+    }
+
     const user = await userRepository.findOne({ id: userId });
     const board = await boardRepository.findOne({ id: boardId });
     const newTodoItem = {
@@ -51,19 +61,19 @@ export const todoItemRoutesInit = (DI: DependecyInjection) => {
       user,
       board
     } as TodoItem;
-    const todoItem = await todoItemRepository.create(newTodoItem);
-    if (category) {
-      todoItem.categories.add(category);
-      category.todo_items.add(todoItem);
-    }
-    await entityManager.flush();
-    res.sendStatus(201);
+    console.log(newTodoItem);
+
+    const todoItem = entityManager.create(TodoItem, newTodoItem);
+    if (categories) todoItem.categories.add(categories);
+    await entityManager.persistAndFlush(todoItem);
+    res.status(201).send(todoItem);
   });
 
   // DELETE
   router.delete('/:id', async (req: Request, res: Response) => {
-    const todoItem = req.todoItem;
+    const todoItem = req.context.todoItem;
     if (!todoItem) return res.status(404).send('Todo Item not found');
+    todoItem.categories.removeAll();
     await entityManager.removeAndFlush(todoItem);
     return res.sendStatus(204);
   });

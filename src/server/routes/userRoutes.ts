@@ -3,6 +3,7 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import crypto from 'crypto';
 import { DependecyInjection } from '../index';
 import { isAuthenticated } from '../helpers/auth_helpers';
+import { User } from '../entities';
 
 export const userRoutesInit = (DI: DependecyInjection) => {
   const userRepository = DI.userRepository;
@@ -13,20 +14,21 @@ export const userRoutesInit = (DI: DependecyInjection) => {
     const userId: number = parseInt(id);
     const user = await userRepository.findOne(
       { id: userId },
-      { populate: ['todo_items.categories', 'boards'] }
+      { populate: ['categories', 'todo_items.categories', 'boards'] }
     );
     if (!user) return res.status(404).send('User not found');
-    req.user = user;
+    req.context = {};
+    req.context.user = user;
     next();
   });
 
   // GET USER FROM JWT TOKEN
-  router.get('/me', async (req: Request, res: Response) => {
-    if (req.headers.authorization) {
-      const token = req.headers.authorization.split(' ')[1];
-      if (!token) return res.status(401).send('Invalid token');
+  router.get('/me', isAuthenticated(DI.passport), async (req: Request, res: Response) => {
+    if (req.cookies.jwtToken) {
+      const token: string = req.cookies.jwtToken;
+      if (!token) return res.status(404).send(null);
       jwt.verify(token, process.env.SECRET_KEY!, async (error, decoded) => {
-        if (error) return res.status(401).send('Invalid token');
+        if (error) return res.status(404).send(null);
         if (decoded) {
           const { username } = decoded as JwtPayload;
           const user = await userRepository.findOne({ username }, { populate: ['todo_items', 'boards'] });
@@ -34,7 +36,7 @@ export const userRoutesInit = (DI: DependecyInjection) => {
         }
       });
     } else {
-      return res.status(401).send('Authorization header not found');
+      return res.status(404).send(null);
     }
   });
 
@@ -46,12 +48,12 @@ export const userRoutesInit = (DI: DependecyInjection) => {
 
   // GET BY ID
   router.get('/:id', isAuthenticated(DI.passport), async (req: Request, res: Response) => {
-    return res.status(200).send(req.user);
+    return res.status(200).send(req.context.user);
   });
 
   // GET BOARDS FOR USER
   router.get('/:id/boards', isAuthenticated(DI.passport), async (req: Request, res: Response) => {
-    const user = req.user;
+    const user = req.context.user;
     if (!user) return res.status(404).send('User not found');
     const boards = user.boards;
     if (!boards) return res.status(404).send('Boards not found for this user');
@@ -60,7 +62,7 @@ export const userRoutesInit = (DI: DependecyInjection) => {
 
   // GET CATEGORIES FOR USER
   router.get('/:id/categories', isAuthenticated(DI.passport), async (req: Request, res: Response) => {
-    const user = req.user;
+    const user = req.context.user;
     if (!user) return res.status(404).send('User not found');
     userRepository.populate(user, ['categories']);
     const categories = user.categories;
@@ -70,7 +72,7 @@ export const userRoutesInit = (DI: DependecyInjection) => {
 
   // GET TODO ITEMS FOR USER
   router.get('/:id/todoItems', isAuthenticated(DI.passport), async (req: Request, res: Response) => {
-    const todoItems = req.user?.todo_items;
+    const todoItems = req.context.user?.todo_items;
     if (!todoItems) return res.status(404).send('Todo Items not found for this user');
     return res.status(200).send(todoItems);
   });
@@ -78,21 +80,37 @@ export const userRoutesInit = (DI: DependecyInjection) => {
   // POST
   router.post('/', async (req: Request, res: Response) => {
     const salt = crypto.randomBytes(16).toString('hex');
-    const userData = { ...req.body, salt };
-    const newUser = await userRepository.create(userData);
+    const { password: rawPassword, username, role } = req.body;
+    const password = crypto.pbkdf2Sync(rawPassword, salt, 310000, 32, 'sha256').toString('hex');
+    const userData = { username, password, role, salt };
+    const newUser = await userRepository.create(userData as User);
     res.status(201).send(newUser);
   });
 
   // DELETE
   router.delete('/:id', isAuthenticated(DI.passport), async (req: Request, res: Response) => {
-    await entityManager.removeAndFlush(req.user!);
+    const user = req.context.user;
+    console.log(user);
+    if (!user) return;
+
+    // Remove the relations between user and categories
+    for (const category of user.categories) {
+      user.categories.remove(category); // Remove the category from user's categories collection
+    }
+
+    // Now you can safely remove the user from the database
+    await userRepository.removeAndFlush(user);
+
+    // user!.todo_items.removeAll();
+    // user!.categories.removeAll();
+    // await entityManager.removeAndFlush(user!);
     return res.sendStatus(204);
   });
 
   // PATCH
   router.patch('/:id', async (req: Request, res: Response) => {
     const { username, role } = req.body;
-    const user = req.user!;
+    const user = req.context.user!;
     user.username = username || user.username;
     user.role = role || user.role;
     await entityManager.persistAndFlush(user);
