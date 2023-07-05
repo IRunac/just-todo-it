@@ -1,6 +1,7 @@
 import 'vuetify/styles';
 import { configure, defineRule } from 'vee-validate';
-import { max, min, numeric, required } from '@vee-validate/rules';
+// eslint-disable-next-line camelcase
+import { max, max_value, min, min_value, numeric, required } from '@vee-validate/rules';
 import App from './App.vue';
 import { createApp } from 'vue';
 import { createPinia } from 'pinia';
@@ -28,6 +29,8 @@ async function init() {
   defineRule('numeric', numeric);
   defineRule('max', max);
   defineRule('min', min);
+  defineRule('max_value', max_value);
+  defineRule('min_value', min_value);
 
   configure({
     validateOnBlur: true,

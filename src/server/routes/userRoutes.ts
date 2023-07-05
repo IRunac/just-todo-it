@@ -90,20 +90,9 @@ export const userRoutesInit = (DI: DependecyInjection) => {
   // DELETE
   router.delete('/:id', isAuthenticated(DI.passport), async (req: Request, res: Response) => {
     const user = req.context.user;
-    console.log(user);
     if (!user) return;
-
-    // Remove the relations between user and categories
-    for (const category of user.categories) {
-      user.categories.remove(category); // Remove the category from user's categories collection
-    }
-
-    // Now you can safely remove the user from the database
+    user.categories.removeAll();
     await userRepository.removeAndFlush(user);
-
-    // user!.todo_items.removeAll();
-    // user!.categories.removeAll();
-    // await entityManager.removeAndFlush(user!);
     return res.sendStatus(204);
   });
 

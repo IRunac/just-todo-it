@@ -18,33 +18,26 @@ const schema = reactive({
   value: {
     required: true,
     numeric: true,
-    min: 0,
-    max: 100,
+    min_value: 0,
+    max_value: 100,
   },
   max_value: {
     required: true,
-    min: 10,
-    max: 100,
+    numeric: true,
+    min_value: 10,
+    max_value: 100,
   },
 });
 
-const { errors, meta, defineInputBinds } = useForm({ validationSchema: schema });
+const { values, errors, meta, defineInputBinds } = useForm({ validationSchema: schema });
 const name = defineInputBinds('name');
 const color = defineInputBinds('color');
 const value = defineInputBinds('value');
 const max_value = defineInputBinds('max_value');
-
 const userStore = useUserStore();
 const categories = reactive([])
 const showForm = ref(false);
 const formElem = ref(null);
-const categoryForm = reactive({
-  name: '',
-  color: '',
-  value: 0,
-  max_value: 100,
-  user_id: userStore.user.id
-})
 
 onMounted(async () => categories.push(... await getUserCategories(userStore.user.id)));
 
@@ -61,7 +54,7 @@ const openForm = async () => {
 };
 
 const createCategory = async () => {
-  categories.push(await createCategoryApi(categoryForm))
+  categories.push(await createCategoryApi({ ...values, user_id: userStore.user.id}))
   showForm.value = false;
 };
 </script>

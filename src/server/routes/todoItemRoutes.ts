@@ -44,8 +44,6 @@ export const todoItemRoutesInit = (DI: DependecyInjection) => {
       category_id: categoryIds
     } = req.body;
 
-    // const category = await categoryRepository.findOne({ id: categoryIds });
-
     const categories = [];
     for (const id of categoryIds) {
       categories.push(entityManager.getReference(Category, id));
@@ -61,7 +59,6 @@ export const todoItemRoutesInit = (DI: DependecyInjection) => {
       user,
       board
     } as TodoItem;
-    console.log(newTodoItem);
 
     const todoItem = entityManager.create(TodoItem, newTodoItem);
     if (categories) todoItem.categories.add(categories);
