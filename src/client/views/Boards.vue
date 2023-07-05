@@ -2,6 +2,7 @@
 import { computed, onMounted, nextTick, reactive, ref } from 'vue';
 import { useUserStore } from '../store/user';
 import { createBoard as createBoardApi, getUserBoards, deleteBoard as deleteBoardApi} from '../api';
+import { Field, useForm, useField } from 'vee-validate';
 
 const TYPES = {
   DAILY: 'daily',
@@ -10,10 +11,19 @@ const TYPES = {
   YEARLY: 'yearly'
 }
 
+const schema = { 
+  boardType: {
+    required: true,
+  },
+};
+// const { value, meta, errorMessage } = useField('boardType', inputValue => !!inputValue);
+
+const { value, errors, meta, defineInputBinds } = useForm({ validationSchema: schema });
+const boardType = defineInputBinds('boardType');
+
 const userStore = useUserStore();
 const boards = reactive([]);
 const typeValues = computed(() => Object.values(TYPES));
-const boardType = ref('')
 const showForm = ref(false);
 const formElem = ref(null);
 
@@ -32,7 +42,7 @@ const openForm = async () => {
 };
 
 const createBoard = async () => {
-  boards.push(await createBoardApi({user_id: userStore.user.id, type: boardType.value}))
+  boards.push(await createBoardApi({user_id: userStore.user.id, type: boardType}))
   showForm.value = false;
 };
 </script>
@@ -60,8 +70,15 @@ const createBoard = async () => {
     <v-row>
       <v-col cols="4">
         <v-form v-show="showForm" @submit.prevent="createBoard" ref="formElem">
-          <v-select v-model="boardType" :items="typeValues" label="Select board type"/>
-          <v-btn type="submit">Submit</v-btn>
+          <v-select
+            :items="typeValues"
+            @update:modelValue="boardType.onInput"
+            :modelValue="boardType.value"
+            name="boardType"
+            label="Select board type"
+            hide-details="auto"/>
+          <div class="text-red" v-show="errors.boardType">{{ errors.boardType }}</div>
+          <v-btn type="submit" class="mt-2" :disabled="!meta.valid">Submit</v-btn>
         </v-form>
       </v-col>
     </v-row>

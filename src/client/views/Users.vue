@@ -1,20 +1,33 @@
 <script setup>
 import { computed, nextTick, onMounted, ref, reactive } from 'vue';
 import { getUsers, deleteUser as deleteUserApi, createUser as createUserApi } from '../api';
+import { useForm } from 'vee-validate';
 
 const ROLES = {
   USER: 'user',
   ADMIN: 'admin'
 }
+const schema = { 
+  username: {
+    required: true,
+    min: 4,
+    max: 12,
+  },
+  password: {
+    required: true,
+    min: 4,
+    max: 12,
+  },
+};
+const { values, errors, meta, defineInputBinds } = useForm({ validationSchema: schema });
+const username = defineInputBinds('username');
+const password = defineInputBinds('password');
+const userRole = ref('user');
+
 const users = reactive([]);
 const userFormElem = ref(null);
 const roleValues = computed(() => Object.values(ROLES));
 const showCreateUserForm = ref(false);
-const userForm = reactive({
-  username: '',
-  password: '',
-  role: 'user'
-})
 
 onMounted(async () => users.push(... await getUsers()));
 
@@ -32,7 +45,7 @@ const openUserForm = async () => {
 };
 
 const createUser = async () => {
-  users.push(await createUserApi(userForm))
+  users.push(await createUserApi({ ...values, role: userRole.value }))
 };
 </script>
 
@@ -63,16 +76,22 @@ const createUser = async () => {
     <v-row>
       <v-col cols="4">
         <v-form v-show="showCreateUserForm" @submit.prevent="createUser" ref="userFormElem" >
-          <v-text-field 
-            v-model="userForm.username"
-            label="Username"
-            outlined/>
           <v-text-field
-            v-model="userForm.password"
-            label="Password"
+            v-bind="username"
+            label="Username"
+            hide-details="auto"
+            class="mt-2"
             outlined/>
-          <v-select v-model="userForm.role" :items="roleValues" label="Select user role"/>
-          <v-btn type="submit">Submit</v-btn>
+          <div class="text-red" v-show="errors.username">{{ errors.username }}</div>
+          <v-text-field
+            v-bind="password"
+            label="Password"
+            hide-details="auto"
+            class="mt-2"
+            outlined/>
+          <div class="text-red" v-show="errors.password">{{ errors.password }}</div>
+          <v-select v-model="userRole" :items="roleValues" label="Select user role" class="mt-2"/>
+          <v-btn type="submit" :disabled="!meta.valid">Submit</v-btn>
         </v-form>
       </v-col>
     </v-row>

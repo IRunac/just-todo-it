@@ -2,6 +2,37 @@
 import { nextTick, onMounted, reactive, ref } from 'vue';
 import { useUserStore } from '../store/user';
 import { createCategory as createCategoryApi, getUserCategories, deleteCategory as deleteCategoryApi } from '../api';
+import { useForm } from 'vee-validate';
+
+const schema = reactive({ 
+  name: {
+    required: true,
+    min: 4,
+    max: 20,
+  },
+  color: {
+    required: true,
+    min: 3,
+    max: 12,
+  },
+  value: {
+    required: true,
+    numeric: true,
+    min: 0,
+    max: 100,
+  },
+  max_value: {
+    required: true,
+    min: 10,
+    max: 100,
+  },
+});
+
+const { errors, meta, defineInputBinds } = useForm({ validationSchema: schema });
+const name = defineInputBinds('name');
+const color = defineInputBinds('color');
+const value = defineInputBinds('value');
+const max_value = defineInputBinds('max_value');
 
 const userStore = useUserStore();
 const categories = reactive([])
@@ -63,22 +94,34 @@ const createCategory = async () => {
       <v-col cols="4">
         <v-form v-show="showForm" @submit.prevent="createCategory" ref="formElem">
           <v-text-field 
-            v-model="categoryForm.name"
+            v-bind="name"
             label="Name"
+            hide-details="auto"
+            class="mt-2"
             outlined/>
+          <div class="text-red" v-show="errors.name">{{ errors.name }}</div>
           <v-text-field
-            v-model="categoryForm.color"
+            v-bind="color"
             label="Color"
+            hide-details="auto"
+            class="mt-2"
             outlined/>
+          <div class="text-red" v-show="errors.color">{{ errors.color }}</div>
           <v-text-field
-            v-model="categoryForm.value"
+            v-bind="value"
             label="Value"
+            hide-details="auto"
+            class="mt-2"
             outlined/>
+          <div class="text-red" v-show="errors.value">{{ errors.value }}</div>
           <v-text-field
-            v-model="categoryForm.max_value"
+            v-bind="max_value"
             label="Max Value"
+            hide-details="auto"
+            class="mt-2"
             outlined/>
-          <v-btn type="submit">Submit</v-btn>
+          <div class="text-red" v-show="errors.max_value">{{ errors.max_value }}</div>
+          <v-btn type="submit" class="mt-2" :disabled="!meta.valid">Submit</v-btn>
         </v-form>
       </v-col>
     </v-row>
