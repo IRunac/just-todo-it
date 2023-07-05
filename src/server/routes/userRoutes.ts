@@ -82,8 +82,9 @@ export const userRoutesInit = (DI: DependecyInjection) => {
     const salt = crypto.randomBytes(16).toString('hex');
     const { password: rawPassword, username, role } = req.body;
     const password = crypto.pbkdf2Sync(rawPassword, salt, 310000, 32, 'sha256').toString('hex');
-    const userData = { username, password, role, salt };
-    const newUser = await userRepository.create(userData as User);
+    const userData = { username, password, role, salt, createdAt: new Date(), updatedAt: new Date() };
+    const newUser = userRepository.create(userData);
+    await entityManager.persistAndFlush(newUser);
     res.status(201).send(newUser);
   });
 
