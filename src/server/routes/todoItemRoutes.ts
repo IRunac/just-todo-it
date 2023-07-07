@@ -2,11 +2,9 @@ import express, { Request, Response } from 'express';
 import { Category } from '../entities/Category';
 import { DependecyInjection } from '../index';
 import { TodoItem } from '../entities/TodoItem';
-import { IntegerType } from '@mikro-orm/core';
 
 export const todoItemRoutesInit = (DI: DependecyInjection) => {
   const todoItemRepository = DI.todoItemRepository;
-  const categoryRepository = DI.categoryRepository;
   const userRepository = DI.userRepository;
   const boardRepository = DI.boardRepository;
   const entityManager = DI.em;

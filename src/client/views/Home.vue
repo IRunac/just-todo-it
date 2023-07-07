@@ -8,11 +8,10 @@ const ITEM_STATUS = {
   DONE: 'done',
 }
 const userStore = useUserStore();
-
 const sortedItems = computed(() => {
   const itemsPerBoardAndStatus = {}
   for (const board of userStore.user.boards) {
-    const itemsPerBoard = userStore.user.todo_items.filter(item => item.board === board.id);
+    const itemsPerBoard = userStore.user.todo_items.filter(item => item.board.id === board.id);
     itemsPerBoardAndStatus[board.type] = {};
     for (const item_status of Object.values(ITEM_STATUS)) {
       itemsPerBoardAndStatus[board.type][item_status] = itemsPerBoard.filter(item => item.status === item_status);

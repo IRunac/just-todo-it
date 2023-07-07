@@ -3,7 +3,6 @@ import jwt, { JwtPayload } from 'jsonwebtoken';
 import crypto from 'crypto';
 import { DependecyInjection } from '../index';
 import { isAuthenticated } from '../helpers/auth_helpers';
-import { User } from '../entities';
 
 export const userRoutesInit = (DI: DependecyInjection) => {
   const userRepository = DI.userRepository;

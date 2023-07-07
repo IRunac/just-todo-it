@@ -2,7 +2,7 @@
 import { computed, onMounted, nextTick, reactive, ref } from 'vue';
 import { useUserStore } from '../store/user';
 import { createBoard as createBoardApi, getUserBoards, deleteBoard as deleteBoardApi} from '../api';
-import { Field, useForm, useField } from 'vee-validate';
+import { useForm } from 'vee-validate';
 
 const TYPES = {
   DAILY: 'daily',
@@ -16,7 +16,6 @@ const schema = {
     required: true,
   },
 };
-// const { value, meta, errorMessage } = useField('boardType', inputValue => !!inputValue);
 
 const { value, errors, meta, defineInputBinds } = useForm({ validationSchema: schema });
 const boardType = defineInputBinds('boardType');
@@ -74,6 +73,7 @@ const createBoard = async () => {
             :items="typeValues"
             @update:modelValue="boardType.onInput"
             :modelValue="boardType.value"
+            v-bind="boardType"
             name="boardType"
             label="Select board type"
             hide-details="auto"/>

@@ -8,6 +8,40 @@ import {
   getUserTodoItems,
   deleteTodoItem
 } from '../api';
+import { useForm } from 'vee-validate';
+
+const schema = reactive({ 
+  name: {
+    required: true,
+    min: 4,
+    max: 20,
+  },
+  completed_increment: {
+    required: true,
+    numeric: true,
+    min_value: 1,
+    max_value: 10,
+  },
+  failed_increment: {
+    required: true,
+    numeric: true,
+    min_value: 0,
+    max_value: 10,
+  },
+  category_id: {
+    required: true,
+  },
+  board_id: {
+    required: true,
+  },
+});
+
+const { values, errors, meta, defineInputBinds } = useForm({ validationSchema: schema, initialValues: {category_id: []} });
+const name = defineInputBinds('name');
+const completed_increment = defineInputBinds('completed_increment');
+const failed_increment = defineInputBinds('failed_increment');
+const category_id = defineInputBinds('category_id');
+const board_id = defineInputBinds('board_id');
 
 const userStore = useUserStore();
 const todoItems = reactive([])
@@ -15,15 +49,6 @@ const categories = reactive([])
 const boards = reactive([])
 const showForm = ref(false);
 const formElem = ref(null);
-const todoItemForm = reactive({
-  name: '',
-  status: 'todo',
-  completed_increment: 1,
-  failed_increment: 1,
-  user_id: userStore.user.id,
-  category_id: [],
-  board_id: null
-})
 
 onMounted(async () => {
   todoItems.push(... await getUserTodoItems(userStore.user.id));
@@ -44,7 +69,7 @@ const openForm = async () => {
 };
 
 const createTodoItem = async () => {
-  todoItems.push(await createTodoItemApi(todoItemForm))
+  todoItems.push(await createTodoItemApi({ ...values, user_id: userStore.user.id, status: 'todo' }))
   showForm.value = false;
 };
 </script>
@@ -77,27 +102,47 @@ const createTodoItem = async () => {
       <v-col cols="4">
         <v-form v-show="showForm" @submit.prevent="createTodoItem" ref="formElem">
           <v-text-field
-            v-model="todoItemForm.name"
+            v-bind="name"
             label="Name"
+            hide-details="auto"
+            class="mt-2"
             outlined/>
+          <div class="text-red" v-show="errors.name">{{ errors.name }}</div>
           <v-text-field
-            v-model="todoItemForm.completed_increment"
+            v-bind="completed_increment"
             label="Completed Increment"
+            hide-details="auto"
+            class="mt-2"
             outlined/>
+          <div class="text-red" v-show="errors.completed_increment">{{ errors.completed_increment }}</div>
           <v-text-field
-            v-model="todoItemForm.failed_increment"
+            v-bind="failed_increment"
             label="Failed Increment"
+            hide-details="auto"
+            class="mt-2"
             outlined/>
+          <div class="text-red" v-show="errors.failed_increment">{{ errors.failed_increment }}</div>
           <v-select
-            v-model="todoItemForm.category_id"
             :items="categories.map(category => ({ title: category.name, value: category.id }))"
+            @update:modelValue="category_id.onInput"
+            :modelValue="category_id.value"
+            v-bind="category_id"
             multiple
-            label="Select item category"/>
+            label="Select item category"
+            hide-details="auto"
+            class="mt-2"/>
+          <div class="text-red" v-show="errors.category_id">{{ errors.category_id }}</div>
           <v-select
-            v-model="todoItemForm.board_id"
             :items="boards.map(board => ({ title: board.type, value: board.id }))"
-            label="Select item board"/>
-          <v-btn type="submit">Submit</v-btn>
+            @update:modelValue="board_id.onInput"
+            :modelValue="board_id.value"
+            v-bind="board_id"
+            name="board_id"
+            label="Select item board"
+            hide-details="auto"
+            class="mt-2"/>
+          <div class="text-red" v-show="errors.board_id">{{ errors.board_id }}</div>
+          <v-btn type="submit" class="mt-2" :disabled="!meta.valid">Submit</v-btn>
         </v-form>
       </v-col>
     </v-row>
